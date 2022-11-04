@@ -1,3 +1,11 @@
+# Importing Modules And Performing Basic Operations
+import mysql.connector as ms
+mycon = ms.connect(host="localhost", user="root", passwd="root")
+mycur = mycon.cursor()
+mycur.execute("CREATE DATABASE IF NOT EXISTS CRYPTO")
+mycon = ms.connect(host="localhost", user="root",
+                   passwd="root", database="crypto")
+
 # Printing of menu
 
 print("******************************************************")

@@ -3,10 +3,11 @@ import mysql.connector as ms
 mycon = ms.connect(host="localhost", user="root", passwd="root")
 mycur = mycon.cursor()
 mycur.execute("CREATE DATABASE IF NOT EXISTS STOCKS;")
-mycur.execute("USE CRYPTO;")
+mycur.execute("USE STOCKS;")
 mycur.execute(
     "CREATE TABLE IF NOT EXISTS USERS (CRPNO INTEGER PRIMARY KEY, ACCNO INTEGER NOT NULL, BANKNAME VARCHAR(90) NOT NULL, PINNO INTEGER NOT NULL, NAME VARCHAR(90) NOT NULL, USERNAME VARCHAR(90) NOT NULL, PASSWD VARCHAR(90) NOT NULL, BALANCE INTEGER NOT NULL);")
-
+mycur.execute(
+    "CREATE TABLE IF NOT EXISTS STOCKS(STKNAME VARCHAR(90) PRIMARY KEY, VALUE CHAR(90) NOT NULL, SYMBOL CHAR(3) NOT NULL);")
 # Printing of menu
 
 print("\n\n\n")
@@ -25,7 +26,7 @@ def display():
     print("                     2.New User? Sign Up              ")
     print("                     3.Add New Stock                  ")
     print("                     4.Remove Existing Stock          ")
-    print("                     5.Contact Us                     ")
+    print("                     5.Diplay All The Stocks          ")
     print("                     6.Exit                           ")
     print("\n\n\n")
 
@@ -39,12 +40,14 @@ selection = int(input("Please enter a menu option:"))
 while True:
     if selection == 1:
         pass
+
     elif selection == 2:
         print("Please enter the following details:-")
 
         # Name
         name = input("Please Enter Your Name: ")
         while name.isalpha() == False:
+            print("Please enter a valid name.")
             name = input("Please Enter Your Real Name: ")
 
         # Username
@@ -100,18 +103,83 @@ while True:
                 f"You've successfully connected to your account {accno}, of {bankname[0]} bank!")
 
     elif selection == 3:
-        pass
+
+        # Stock name
+        stkname = input("Please enter stock name:")
+        while stkname.isalpha() == False:
+            print("Please enter a valid name.")
+            stkname = input("Please enter the real name of the stock: ")
+
+        # Stock value + Checking if the value entered is valid
+        stkval = input(
+            "Please enter stock value (in $):")
+
+        while True:
+            try:
+                float(stkval)
+                break
+            except ValueError:
+                print("You've entered an invalid price of the stock.")
+                stkval = input(
+                    "Please enter a valid price of the stock (in $):")
+
+        # Stock Symbol
+        stksym = input("Please enter a 3-letter symbol for the stock:")
+        while stksym.isalpha() == False or len(stksym) != 3:
+            print("You've entered an invalid symbol.")
+            stksym = input(
+                "Please enter a valid 3-letter symbol for the stock:")
+
+        print(stkval)
+
+        mycur.execute(
+            "INSERT INTO STOCKS VALUES('{0}','{1}','{2}');".format(stkname.capitalize(), stkval, stksym.upper()))
+        # mycon.commit()
+
+        print(f"The {stkname} stock has been successfully added to the market!")
+
     elif selection == 4:
-        pass
+
+        # Validating the Stock name
+        stkrem = input("Please enter stock to be removed from the listing:")
+        while stkrem.isalpha() == False:
+            print("Please enter a valid name.")
+            stkname = input("Please enter the real name of the stock: ")
+        mycur.execute(
+            "SELECT * FROM STOCKS WHERE STKNAME = '{}'".format(stkrem.capitalize()))
+        stkrec = mycur.fetchall()
+
+        # Checking and Deleting The Stock
+        if len(stkrec) == 0:
+            print("No such stock exists.")
+
+        else:
+            mycur.execute(
+                "DELETE FROM STOCKS WHERE STKNAME = '{}'".format(stkrem))
+            print(
+                f"The {stkrem} has been successfully removed from the listing!")
+
     elif selection == 5:
-        print("For customer support please email us at: support@stockarena.com")
-        print("Or call us on our toll free number: 1800-100-200               ")
+        # Displaying the stocks
+        mycur.execute("SELECT * FROM STOCKS;")
+        displayingstks = mycur.fetchall()
+        if len(displayingstks) == 0:
+            print("No stocks have been added yet")
+        else:
+            print("Stock Name                   ",
+                  "Stock Value                  ", "Stock Symbol                  ")
+            for i in displayingstks:
+                for j in i:
+                    spaces = 30 - len(j)
+                    print(j, end=" " * spaces)
+
     elif selection == 6:
         break
+
     else:
         selection = int(input("Please Enter A Valid Menu Option:"))
 
     display()
     selection = int(input("Please enter a menu option:"))
 
-print("You've Exited The Program Successfully! Thank you for using Stock Arena!")
+print("You've exited the program successfully! Thank you for using Stock Arena!")

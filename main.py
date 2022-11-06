@@ -7,7 +7,28 @@ mycur.execute("USE STOCKS;")
 mycur.execute(
     "CREATE TABLE IF NOT EXISTS USERS (CRPNO INTEGER PRIMARY KEY, ACCNO INTEGER NOT NULL, BANKNAME VARCHAR(90) NOT NULL, PINNO INTEGER NOT NULL, NAME VARCHAR(90) NOT NULL, USERNAME VARCHAR(90) NOT NULL, PASSWD VARCHAR(90) NOT NULL, BALANCE INTEGER NOT NULL);")
 mycur.execute(
-    "CREATE TABLE IF NOT EXISTS STOCKS(STKNAME VARCHAR(90) PRIMARY KEY, VALUE CHAR(90) NOT NULL, SYMBOL CHAR(3) NOT NULL);")
+    "CREATE TABLE IF NOT EXISTS STOCKS(STKNAME VARCHAR(90) PRIMARY KEY, VALUE CHAR(90) NOT NULL, SYMBOL CHAR(9) NOT NULL);")
+
+# Inserting default Stock values
+mycur.execute("INSERT INTO STOCKS VALUES ('Apple','139','AAPL');")
+mycur.execute("INSERT INTO STOCKS VALUES ('Saudi Aramco', '9.13', '2222.sr')")
+mycur.execute("INSERT INTO STOCKS VALUES ('Microsoft', '221.36', 'MSFT')")
+mycur.execute("INSERT INTO STOCKS VALUES ('Google', '86.70', 'GOOG')")
+mycur.execute("INSERT INTO STOCKS VALUES ('Amazon', '90.98', 'AMZN')")
+mycur.execute("INSERT INTO STOCKS VALUES ('Tesla', '207.47', 'TSLA')")
+mycur.execute("INSERT INTO STOCKS VALUES ('Berkshire Hathway', '287', 'BRK')")
+mycur.execute("INSERT INTO STOCKS VALUES ('Unitded Health', '538.71', 'UNH')")
+mycur.execute("INSERT INTO STOCKS VALUES ('Exxon Mobil', '112.31', 'XOM')")
+mycur.execute("INSERT INTO STOCKS VALUES ('Johnson', '171.48', 'JNJ')")
+mycur.execute("INSERT INTO STOCKS VALUES ('Visa', '196.98', 'V')")
+mycur.execute("INSERT INTO STOCKS VALUES ('JPMorgan', '130.58', 'JPM')")
+mycur.execute("INSERT INTO STOCKS VALUES ('Walmart', '140.97', 'WMT')")
+mycur.execute("INSERT INTO STOCKS VALUES ('Nvidia', '141.56', 'NVDA')")
+mycur.execute("INSERT INTO STOCKS VALUES ('Chevron', '183.42', 'CVX')")
+mycur.execute("INSERT INTO STOCKS VALUES ('Eli Lilly', '357.41', 'LLY')")
+mycur.execute("INSERT INTO STOCKS VALUES ('LVMH', '663.61', 'MCPA')")
+mycur.execute("INSERT INTO STOCKS VALUES ('TSCM', '62.48', 'TSM')")
+
 # Printing of menu
 
 print("\n\n\n")

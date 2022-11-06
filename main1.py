@@ -5,7 +5,7 @@ mycur = mycon.cursor()
 mycur.execute("CREATE DATABASE IF NOT EXISTS STOCKS;")
 mycur.execute("USE STOCKS;")
 mycur.execute(
-    "CREATE TABLE IF NOT EXISTS USERS (ACCNO INTEGER NOT NULL, BANKNAME VARCHAR(90) NOT NULL, PINNO INTEGER NOT NULL, NAME VARCHAR(90) NOT NULL, USERNAME VARCHAR(90) NOT NULL, PASSWD VARCHAR(90) NOT NULL, AADHAR VARCHAR(12) PRIMARY KEY, BALANCE VARCHAR(18););")
+    "CREATE TABLE IF NOT EXISTS USERS (ACCNO INTEGER NOT NULL, BANKNAME VARCHAR(90) NOT NULL, PINNO INTEGER NOT NULL, NAME VARCHAR(90) NOT NULL, USERNAME VARCHAR(90) NOT NULL, PASSWD VARCHAR(90) NOT NULL, AADHAR VARCHAR(12) PRIMARY KEY, BALANCE VARCHAR(18));")
 mycur.execute(
     "CREATE TABLE IF NOT EXISTS STOCKS(STKNAME VARCHAR(90) PRIMARY KEY, VALUE CHAR(90) NOT NULL, SYMBOL CHAR(9) NOT NULL);")
 
@@ -55,11 +55,14 @@ def display_main():
 def display_submenu():
     print("                        Account Menu                  ")
     print("                     1.Show Balance                   ")
-    print("                     2.Show Available Stocks          ")
-    print("                     3.Buy New Stock                  ")
-    print("                     4.Add New Stock                  ")
-    print("                     5.Remove Existing Stock          ")
-    print("                     6.Return to Main Menu            ")
+    print("                     2.Deposit Money                  ")
+    print("                     3.Withdraw Money                 ")
+    print("                     4.Change username                ")
+    print("                     5.Show Available Stocks          ")
+    print("                     6.Buy New Stock                  ")
+    print("                     7.Add New Stock                  ")
+    print("                     8.Remove Existing Stock          ")
+    print("                     9.Return to Main Menu            ")
 
 
 # Main Code Starts From Here
@@ -69,23 +72,62 @@ display_main()
 selection = int(input("Please enter a menu option:"))
 
 
-def submenu():
-    selec = int(input("Please enter a menu option:"))
+def submenu(user):
     while True:
         """
         1) Show balance
         2) Show available stock
         3) Buy Stock
-        4) Add 
+        4) Add
         5) Remove
         6) Return to Main Menu
 
         """
+        print("\n\n\n")
         display_submenu()
+        print("\n\n\n")
+        selec = int(input("Please enter a menu option:"))
+        print()
         if selec == 1:
-            pass
+            # Diplaying Balance
+            mycur.execute(
+                "SELECT BALANCE FROM USERS WHERE USERNAME = '{}';".format(user))
+            balance_report = mycur.fetchall()
+            for i in balance_report:
+                print(f"These is your current balance {i[0]}.")
 
         elif selec == 2:
+            deposit = input("Please enter amount of money to be deposited:")
+
+            while deposit.isnumeric() == False:
+                print("You've entered an invalid amount.")
+                deposit = input("Please enter a valid amount: ")
+
+            mycur.execute(
+                "SELECT BALANCE FROM USERS WHERE USERNAME = '{}';".format(user))
+            balance_report = mycur.fetchall()
+            net_balance = int(balance_report[0]) + int(deposit)
+            mycur.execute("UPDATE USERS SET BALANCE = '{}' WHERE USERNAME = '{}'".format(
+                str(net_balance), user))
+
+        elif selec == 3:
+            withdraw = input("Please enter amount of money to be withdrawn:")
+
+            while withdraw.isnumeric() == False:
+                print("You've entered an invalid amount.")
+                deposit = input("Please enter a valid amount: ")
+
+            mycur.execute(
+                "SELECT BALANCE FROM USERS WHERE USERNAME = '{}';".format(user))
+            balance_report = mycur.fetchall()
+            net_balance = int(balance_report[0]) - int(withdraw)
+            mycur.execute("UPDATE USERS SET BALANCE = '{}' WHERE USERNAME = '{}'".format(
+                str(net_balance), user))
+
+        elif selec == 4:
+            pass
+
+        elif selec == 5:
             # Displaying the stocks
             print()
             mycur.execute("SELECT * FROM STOCKS;")
@@ -101,10 +143,10 @@ def submenu():
                         print(j, end=" " * spaces)
                     print()
 
-        elif selec == 3:
+        elif selec == 6:
             pass
 
-        elif selec == 4:
+        elif selec == 7:
             # Stock name
             stkname = input("Please enter stock name:")
             while stkname.isalpha() == False:
@@ -140,7 +182,7 @@ def submenu():
             print(
                 f"The {stkname} stock has been successfully added to the market!")
 
-        elif selection == 5:
+        elif selection == 8:
 
             # Validating the Stock name
             stkrem = input(
@@ -162,7 +204,7 @@ def submenu():
                 print(
                     f"The {stkrem} has been successfully removed from the listing!")
 
-        elif selection == 6:
+        elif selection == 9:
             print("You've successfully returned to the main menu!")
 
 
@@ -191,11 +233,11 @@ while True:
         # Name
         name = input("Please Enter Your Name: ")
         while name.isalpha() == False:
-            print("Please enter a valid name.")
-            name = input("Please Enter Your Real Name: ")
+            print("You've entered an invalid name.")
+            name = input("Please enter your real name: ")
 
         # Username
-        username = input("Please Enter A Username: ")
+        username = input("Please enter a username: ")
         mycur.execute("SELECT USERNAME FROM USERS;")
         users = mycur.fetchall()
         print(users)
@@ -230,6 +272,28 @@ while True:
         # Process
         accno = input("Please enter your 10-digit account number:")
 
+        # Aadhar number
+        aadhar = input("Please enter your Aadhar number:")
+
+        while aadhar.isnumeric() == False:
+            print("You've entered an invalid Aadhar number.")
+            name = input("Please enter a valid Aadhar number: ")
+
+        mycur.execute("SELECT AADHAR FROM USERS;")
+        aadhars_of_users = mycur.fetchall()
+
+        # Checking if Aadhar is repeated
+        while username.lower() in users:
+            print("This Aadhar has already exists.")
+            reply = input("Existing User? Y/N?")
+            if reply.lower() == "y":
+                print("Then please do proceed to the existing user option.")
+                print()
+                break
+            else:
+                aadhar = input("Please enter your aadhar number again:")
+                print()
+
         # Validating Account number
         while accno.isnumeric() == False or len(accno) != 10:
             print("You've entered an incorrent account number.")
@@ -242,14 +306,24 @@ while True:
         while len(str(pin)) != 4:
             print("Please Enter A Valid PIN")
             pin = int(input("Please Enter Your PIN No:"))
-        else:
-            print(
-                f"You've successfully connected to your account {accno}, of {bankname[0]} bank!")
+
+        # Balance
+        balance = input(
+            "Please enter amount of money you wish to deposit (in $):")
+
+        while balance.isnumeric() == False:
+            print("You've entered an invalid amount.")
+            balance = input("Please Enter a valid amount:")
 
         mycur.execute(
-            "INSERT INTO USERS VALUES ('{}','{}','{}','{}', '{}', '{}')".format(accno, bankname[0], pin, name, username, pwd))
+            "INSERT INTO USERS VALUES ('{}','{}','{}','{}', '{}', '{}', '{}', '{}')".format(accno, bankname[0], pin, name, username, pwd, aadhar, balance))
+        print()
+        print(
+            f"You've successfully connected to your account {accno}, of {bankname[0]} bank and deposited ${balance} !")
 
-    elif selection == 6:
+        submenu(username)
+
+    elif selection == 3:
         break
 
     else:

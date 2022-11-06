@@ -5,7 +5,7 @@ mycur = mycon.cursor()
 mycur.execute("CREATE DATABASE IF NOT EXISTS STOCKS;")
 mycur.execute("USE STOCKS;")
 mycur.execute(
-    "CREATE TABLE IF NOT EXISTS USERS (CRPNO INTEGER PRIMARY KEY, ACCNO INTEGER NOT NULL, BANKNAME VARCHAR(90) NOT NULL, PINNO INTEGER NOT NULL, NAME VARCHAR(90) NOT NULL, USERNAME VARCHAR(90) NOT NULL, PASSWD VARCHAR(90) NOT NULL, BALANCE INTEGER NOT NULL);")
+    "CREATE TABLE IF NOT EXISTS USERS (ACCNO INTEGER NOT NULL, BANKNAME VARCHAR(90) NOT NULL, PINNO INTEGER NOT NULL, NAME VARCHAR(90) NOT NULL, USERNAME VARCHAR(90) NOT NULL, PASSWD VARCHAR(90) NOT NULL);")
 mycur.execute(
     "CREATE TABLE IF NOT EXISTS STOCKS(STKNAME VARCHAR(90) PRIMARY KEY, VALUE CHAR(90) NOT NULL, SYMBOL CHAR(9) NOT NULL);")
 
@@ -29,6 +29,7 @@ mycur.execute("INSERT INTO STOCKS VALUES ('Eli Lilly', '357.41', 'LLY')")
 mycur.execute("INSERT INTO STOCKS VALUES ('LVMH', '663.61', 'MCPA')")
 mycur.execute("INSERT INTO STOCKS VALUES ('TSCM', '62.48', 'TSM')")
 
+
 # Printing of menu
 
 print("\n\n\n")
@@ -39,6 +40,8 @@ print("               Your Turn To Become Richer             ")
 print("         -------------------------------------        ")
 print("******************************************************")
 
+
+# Functions used
 
 def display():
     print("\n\n\n")
@@ -53,6 +56,7 @@ def display():
 
 
 # Main Code Starts From Here
+
 # Selection Of Option from Menu
 display()
 selection = int(input("Please enter a menu option:"))
@@ -60,7 +64,20 @@ selection = int(input("Please enter a menu option:"))
 # Main Loop
 while True:
     if selection == 1:
-        pass
+        mycur.execute("SELECT USERNAME FROM USERS;")
+        usernames = mycur.fetchall()
+        usrname_existing = input("Please enter your username:")
+        print()
+        while usrname_existing not in usernames:
+            print("This user doesn't exist!")
+            reply = input("New User? Y/N?")
+            if reply.lower() == "y":
+                print("Then please do proceed to the sign up option.")
+                print()
+                break
+            else:
+                usrname_existing = input("Please enter your username again:")
+                print()
 
     elif selection == 2:
         print("Please enter the following details:-")
@@ -122,6 +139,9 @@ while True:
         else:
             print(
                 f"You've successfully connected to your account {accno}, of {bankname[0]} bank!")
+
+        mycur.execute(
+            "INSERT INTO USERS VALUES ('{}','{}','{}','{}', '{}', '{}')".format(accno, bankname, pin, name, username, pwd))
 
     elif selection == 3:
 

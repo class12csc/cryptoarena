@@ -5,7 +5,7 @@ mycur = mycon.cursor()
 mycur.execute("CREATE DATABASE IF NOT EXISTS STOCKS;")
 mycur.execute("USE STOCKS;")
 mycur.execute(
-    "CREATE TABLE IF NOT EXISTS USERS (ACCNO INTEGER NOT NULL, BANKNAME VARCHAR(90) NOT NULL, PINNO INTEGER NOT NULL, NAME VARCHAR(90) NOT NULL, USERNAME VARCHAR(90) NOT NULL, PASSWD VARCHAR(90) NOT NULL, AADHAR VARCHAR(12) PRIMARY KEY, BALANCE VARCHAR(18));")
+    "CREATE TABLE IF NOT EXISTS USERS (ACCNO VARCHAR(10) NOT NULL, BANKNAME VARCHAR(90) NOT NULL, PINNO INTEGER NOT NULL, NAME VARCHAR(90) NOT NULL, USERNAME VARCHAR(90) NOT NULL, PASSWD VARCHAR(90) NOT NULL, AADHAR VARCHAR(12) PRIMARY KEY, BALANCE VARCHAR(18));")
 mycur.execute(
     "CREATE TABLE IF NOT EXISTS STOCKS(STKNAME VARCHAR(90) PRIMARY KEY, VALUE CHAR(90) NOT NULL, SYMBOL CHAR(9) NOT NULL);")
 
@@ -30,7 +30,8 @@ mycur.execute("INSERT INTO STOCKS VALUES ('LVMH', '663.61', 'MCPA')")
 mycur.execute("INSERT INTO STOCKS VALUES ('TSCM', '62.48', 'TSM')")
 
 # Inserting one default User
-# mycur.execute("INSERT INTO USERS VALUES (1234567890,'m',1234,'m','m','m','1234','1200';")
+mycur.execute(
+    "INSERT INTO USERS VALUES ('1234567890','m','1234','m','m','m','1234','1200');")
 
 
 # Printing of menu
@@ -550,10 +551,19 @@ while True:
         # PIN number
         print("Connecting...")
         pin1 = int(input("Please enter a PIN No:"))
+        while len(str(pin1)) != 4:
+            print("Please Enter A Valid PIN")
+            pin1 = int(input("Please Enter Your PIN No:"))
+
         pin2 = int(input("Please retype your PIN No to confirm:"))
+        while len(str(pin2)) != 4:
+            print("Please Enter A Valid PIN")
+            pin2 = int(input("Please Enter Your PIN No:"))
+
+        print()
 
         # Checking if the PIN No do match
-        while pin1 != pin1:
+        while pin1 != pin2:
             print("Both The PIN Numbers Do Not Match")
             pin1 = int(input("Please enter a PIN No:"))
 
@@ -569,7 +579,7 @@ while True:
                 print("Please Enter A Valid PIN")
                 pin2 = int(input("Please Enter Your PIN No:"))
         else:
-            print("Your Password has been set successfully!")
+            print("Your PIN No has been set successfully!")
 
         print()
 
@@ -579,7 +589,7 @@ while True:
 
         while balance.isnumeric() == False:
             print("You've entered an invalid amount.")
-            balance = input("Please Enter a valid amount:")
+            balance = input("Please Enter a valid amount (in $):")
 
         mycur.execute(
             "INSERT INTO USERS VALUES ('{}','{}','{}','{}', '{}', '{}', '{}', '{}')".format(accno, bankname[0], str(pin1), name, username, pwd, aadhar, balance))

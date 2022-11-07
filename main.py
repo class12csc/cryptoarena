@@ -41,6 +41,8 @@ print("******************************************************")
 print("         -------------------------------------        ")
 print("                 Welcome To Stock Arena               ")
 print("               Your Turn To Become Richer             ")
+print()
+print("                 By Tushar and Nischit                ")
 print("         -------------------------------------        ")
 print("******************************************************")
 

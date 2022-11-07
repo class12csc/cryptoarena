@@ -604,6 +604,8 @@ while True:
 
     else:
         selection = input("Please Enter A Valid Menu Option:")
+        new_var -= 1
+        print()
 
 
 print("You've exited the program successfully! Thank you for using Stock Arena!")

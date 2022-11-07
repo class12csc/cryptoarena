@@ -135,9 +135,12 @@ def submenu(user, pinno):
                     "SELECT BALANCE FROM USERS WHERE USERNAME = '{}';".format(user))
                 balance_report = mycur.fetchall()
                 net_balance = float(balance_report[0][0]) - float(withdraw)
-                mycur.execute("UPDATE USERS SET BALANCE = '{}' WHERE USERNAME = '{}'".format(
-                    str(net_balance), user))
-                print(f"Your current balance is: ${net_balance}")
+                if net_balance < 0:
+                    print("You've insufficient balance!")
+                else:
+                    mycur.execute("UPDATE USERS SET BALANCE = '{}' WHERE USERNAME = '{}'".format(
+                        str(net_balance), user))
+                    print(f"Your current balance is: ${net_balance}")
 
         elif selec == '4':
             replyc = input("Are you sure? Y/N?:")
@@ -206,12 +209,15 @@ def submenu(user, pinno):
                     stock_value = mycur.fetchall()
                     net_balance = float(
                         balance_report[0][0]) - float(stock_value[0][0])
-                    mycur.execute("UPDATE USERS SET BALANCE = '{}' WHERE USERNAME = '{}'".format(
-                        str(net_balance), user))
-                    print()
-                    print(
-                        f"You've successfully bought {stock_to_be_bought} for a price of ${stock_value[0][0]}.")
-                    print(f"Your updated balance is $ {str(net_balance)}")
+                    if net_balance < 0:
+                        print("You've insufficient balance!")
+                    else:
+                        mycur.execute("UPDATE USERS SET BALANCE = '{}' WHERE USERNAME = '{}'".format(
+                            str(net_balance), user))
+                        print()
+                        print(
+                            f"You've successfully bought {stock_to_be_bought} for a price of ${stock_value[0][0]}.")
+                        print(f"Your updated balance is $ {str(net_balance)}")
 
         elif selec == '7':
             # Stock name

@@ -5,7 +5,7 @@ mycur = mycon.cursor()
 mycur.execute("CREATE DATABASE IF NOT EXISTS STOCKS;")
 mycur.execute("USE STOCKS;")
 mycur.execute(
-    "CREATE TABLE IF NOT EXISTS USERS (ACCNO VARCHAR(10) NOT NULL, BANKNAME VARCHAR(90) NOT NULL, PINNO INTEGER NOT NULL, NAME VARCHAR(90) NOT NULL, USERNAME VARCHAR(90) NOT NULL, PASSWD VARCHAR(90) NOT NULL, AADHAR VARCHAR(12) PRIMARY KEY, BALANCE VARCHAR(18));")
+    "CREATE TABLE IF NOT EXISTS USERS (ACCNO VARCHAR(10) NOT NULL, BANKNAME VARCHAR(90) NOT NULL, PINNO CHAR(4) NOT NULL, NAME VARCHAR(90) NOT NULL, USERNAME VARCHAR(90) PRIMARY KEY, PASSWD VARCHAR(90) NOT NULL, AADHAR VARCHAR(12), BALANCE VARCHAR(18));")
 mycur.execute(
     "CREATE TABLE IF NOT EXISTS STOCKS(STKNAME VARCHAR(90) PRIMARY KEY, VALUE CHAR(90) NOT NULL, SYMBOL CHAR(9) NOT NULL);")
 
@@ -75,6 +75,7 @@ def display_submenu():
 
 # Selection Of Option from Menu
 display_main()
+selection = input("Please enter a menu option:")
 
 
 def submenu(user, pinno):
@@ -156,6 +157,7 @@ def submenu(user, pinno):
                         "DELETE FROM USERS WHERE USERNAME = '{}'".format(user))
                     print(
                         "Your account has been deleted successfully. Thank you for being with Stock Arena!")
+                    break
                 else:
                     print()
 
@@ -184,8 +186,8 @@ def submenu(user, pinno):
             temp_list = []
             for i in stock_names:
                 for j in i:
-                    temp_list.append(j)
-            while stock_to_be_bought not in temp_list:
+                    temp_list.append(j.lower())
+            while stock_to_be_bought.lower() not in temp_list:
                 print("This stock does not exist!")
                 print("Please choose from the above mentioned stocks or add new stock.")
                 add_new_stock = input("Add new Stock? Y/N?")
@@ -292,8 +294,7 @@ while True:
         new_var += 1
     else:
         display_main()
-
-    selection = input("Please enter a menu option:")
+        selection = input("Please enter a menu option:")
 
     if selection == '1':
         # For Username
@@ -401,7 +402,7 @@ while True:
                                 accno = input(
                                     "Please enter your Aadhar number again:")
                                 print()
-                                while accno.isnumeric() == False or len(accno) != 10:
+                                while accno.isnumeric() == False:
                                     print(
                                         "You've entered an incorrent Aadhar number.")
                                     accno = input(
@@ -409,12 +410,12 @@ while True:
 
                     # PIN number
                     print("Connecting...")
-                    pin_no = int(input("Please enter your PIN No:"))
+                    pin_no = input("Please enter your PIN No:")
 
                     # Validating PIN number
-                    while len(str(pin_no)) != 4:
+                    while len(pin_no) != 4:
                         print("Please Enter A Valid PIN")
-                        pin_no = int(input("Please Enter Your PIN No:"))
+                        pin_no = input("Please Enter Your PIN No:")
                         break
 
                     mycur.execute(
@@ -533,7 +534,7 @@ while True:
 
         while aadhar.isnumeric() == False:
             print("You've entered an invalid Aadhar number.")
-            name = input("Please enter a valid Aadhar number: ")
+            aadhar = input("Please enter a valid Aadhar number: ")
 
         mycur.execute("SELECT AADHAR FROM USERS;")
         aadhars_of_users = mycur.fetchall()
@@ -558,34 +559,34 @@ while True:
 
         # PIN number
         print("Connecting...")
-        pin1 = int(input("Please enter a PIN No:"))
-        while len(str(pin1)) != 4:
+        pin1 = input("Please enter a PIN No:")
+        while len(pin1) != 4 or pin1 == "":
             print("Please Enter A Valid PIN")
-            pin1 = int(input("Please Enter Your PIN No:"))
+            pin1 = input("Please Enter Your PIN No:")
 
-        pin2 = int(input("Please retype your PIN No to confirm:"))
-        while len(str(pin2)) != 4:
+        pin2 = input("Please retype your PIN No to confirm:")
+        while len(pin2) != 4 or pin2 == "":
             print("Please Enter A Valid PIN")
-            pin2 = int(input("Please Enter Your PIN No:"))
+            pin2 = input("Please Enter Your PIN No:")
 
         print()
 
         # Checking if the PIN No do match
         while pin1 != pin2:
             print("Both The PIN Numbers Do Not Match")
-            pin1 = int(input("Please enter a PIN No:"))
+            pin1 = input("Please enter a PIN No:")
 
             # Validating PIN number
-            while len(str(pin1)) != 4:
+            while len(pin1) != 4:
                 print("Please Enter A Valid PIN")
-                pin1 = int(input("Please Enter Your PIN No:"))
+                pin1 = input("Please Enter Your PIN No:")
 
-            pin2 = int(input("Please retype your PIN No to confirm:"))
+            pin2 = input("Please retype your PIN No to confirm:")
 
             # Validating PIN number
-            while len(str(pin2)) != 4:
+            while len(pin2) != 4:
                 print("Please Enter A Valid PIN")
-                pin2 = int(input("Please Enter Your PIN No:"))
+                pin2 = input("Please Enter Your PIN No:")
         else:
             print("Your PIN No has been set successfully!")
 
@@ -600,19 +601,19 @@ while True:
             balance = input("Please Enter a valid amount (in $):")
 
         mycur.execute(
-            "INSERT INTO USERS VALUES ('{}','{}','{}','{}', '{}', '{}', '{}', '{}')".format(accno, bankname[0], str(pin1), name, username, pwd, aadhar, balance))
+            "INSERT INTO USERS VALUES ('{}','{}','{}','{}', '{}', '{}', '{}', '{}')".format(accno, bankname[0], pin1, name, username, pwd, aadhar, balance))
         print()
         print(
             f"You've successfully connected to your account {accno}, of {bankname[0]} bank and deposited ${balance} !")
 
-        submenu(username, str(pin1))
+        submenu(username, pin1)
 
     elif selection == '3':
         break
 
     else:
         selection = input("Please Enter A Valid Menu Option:")
-        new_var -= 1
+        new_var = 1
         print()
 
 

@@ -104,35 +104,38 @@ def submenu(user, pinno):
                 deposit = input("Please enter a valid amount: ")
 
             pin_entered = input("Please enter your PIN number:")
-            while pin_entered == pinno:
+            while pin_entered != pinno:
                 print("The entered pin is incorrect.")
                 pin_entered = input("Please enter your correct pin:")
             else:
                 mycur.execute(
                     "SELECT BALANCE FROM USERS WHERE USERNAME = '{}';".format(user))
                 balance_report = mycur.fetchall()
-                net_balance = int(balance_report[0]) + int(deposit)
+                net_balance = int(balance_report[0][0]) + int(deposit)
                 mycur.execute("UPDATE USERS SET BALANCE = '{}' WHERE USERNAME = '{}'".format(
                     str(net_balance), user))
+                print(f"Your current balance is: ${net_balance}")
 
         elif selec == 3:
             withdraw = input("Please enter amount of money to be withdrawn:")
 
             while withdraw.isnumeric() == False:
                 print("You've entered an invalid amount.")
-                deposit = input("Please enter a valid amount: ")
+                withdraw = input("Please enter a valid amount: ")
 
             pin_entered = input("Please enter your PIN number:")
-            while pin_entered == pinno:
+            while pin_entered != pinno:
                 print("The entered pin is incorrect.")
                 pin_entered = input("Please enter your correct pin:")
             else:
                 mycur.execute(
                     "SELECT BALANCE FROM USERS WHERE USERNAME = '{}';".format(user))
                 balance_report = mycur.fetchall()
-                net_balance = int(balance_report[0]) - int(withdraw)
+                print(balance_report)
+                net_balance = int(balance_report[0][0]) - int(withdraw)
                 mycur.execute("UPDATE USERS SET BALANCE = '{}' WHERE USERNAME = '{}'".format(
                     str(net_balance), user))
+                print(f"Your current balance is: ${net_balance}")
 
         elif selec == 4:
             replyc = input("Are you sure? Y/N?:")
@@ -169,7 +172,7 @@ def submenu(user, pinno):
 
             mycur.execute("SELECT STKNAME FROM STOCKS;")
             stock_names = mycur.fetchall()
-            while stock_to_be_bought not in stock_names:
+            while tuple(stock_to_be_bought) not in stock_names:
                 print("This stock does not exist!")
                 print("Please choose from the above mentioned stocks or add new stock.")
                 add_new_stock = input("Add new Stock? Y/N?")
@@ -535,7 +538,7 @@ while True:
         print(
             f"You've successfully connected to your account {accno}, of {bankname[0]} bank and deposited ${balance} !")
 
-        submenu(username, pin1)
+        submenu(username, str(pin1))
 
     elif selection == 3:
         break

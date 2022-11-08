@@ -1,53 +1,73 @@
 # Importing Modules And Performing Basic Operations
+
 import mysql.connector as ms
-mycon = ms.connect(host="localhost", user="root", passwd="root")
+mycon = ms.connect(host="localhost", user="root",
+                   passwd="root")
 mycur = mycon.cursor()
 mycur.execute("CREATE DATABASE IF NOT EXISTS STOCKS;")
 mycur.execute("USE STOCKS;")
 mycur.execute(
     "CREATE TABLE IF NOT EXISTS USERS (ACCNO VARCHAR(10) NOT NULL, BANKNAME VARCHAR(90) NOT NULL, PINNO CHAR(4) NOT NULL, NAME VARCHAR(90) NOT NULL, USERNAME VARCHAR(90) PRIMARY KEY, PASSWD VARCHAR(90) NOT NULL, AADHAR VARCHAR(12), BALANCE VARCHAR(18));")
 mycur.execute(
-    "CREATE TABLE IF NOT EXISTS STOCKS(STKNAME VARCHAR(90) PRIMARY KEY, VALUE CHAR(90) NOT NULL, SYMBOL CHAR(9) NOT NULL);")
-
-# Inserting default Stock values
-mycur.execute("INSERT INTO STOCKS VALUES ('Apple','139','AAPL');")
-mycur.execute("INSERT INTO STOCKS VALUES ('Saudi Aramco', '9.13', '2222.sr')")
-mycur.execute("INSERT INTO STOCKS VALUES ('Microsoft', '221.36', 'MSFT')")
-mycur.execute("INSERT INTO STOCKS VALUES ('Google', '86.70', 'GOOG')")
-mycur.execute("INSERT INTO STOCKS VALUES ('Amazon', '90.98', 'AMZN')")
-mycur.execute("INSERT INTO STOCKS VALUES ('Tesla', '207.47', 'TSLA')")
-mycur.execute("INSERT INTO STOCKS VALUES ('Berkshire Hathway', '287', 'BRK')")
-mycur.execute("INSERT INTO STOCKS VALUES ('Unitded Health', '538.71', 'UNH')")
-mycur.execute("INSERT INTO STOCKS VALUES ('Exxon Mobil', '112.31', 'XOM')")
-mycur.execute("INSERT INTO STOCKS VALUES ('Johnson', '171.48', 'JNJ')")
-mycur.execute("INSERT INTO STOCKS VALUES ('Visa', '196.98', 'V')")
-mycur.execute("INSERT INTO STOCKS VALUES ('JPMorgan', '130.58', 'JPM')")
-mycur.execute("INSERT INTO STOCKS VALUES ('Walmart', '140.97', 'WMT')")
-mycur.execute("INSERT INTO STOCKS VALUES ('Nvidia', '141.56', 'NVDA')")
-mycur.execute("INSERT INTO STOCKS VALUES ('Chevron', '183.42', 'CVX')")
-mycur.execute("INSERT INTO STOCKS VALUES ('Eli Lilly', '357.41', 'LLY')")
-mycur.execute("INSERT INTO STOCKS VALUES ('LVMH', '663.61', 'MCPA')")
-mycur.execute("INSERT INTO STOCKS VALUES ('TSCM', '62.48', 'TSM')")
-
-# Inserting one default User
-mycur.execute(
-    "INSERT INTO USERS VALUES ('1234567890','m','1234','m','m','m','1234','1200');")
+    "CREATE TABLE IF NOT EXISTS STOCKS (STKNAME VARCHAR(90) PRIMARY KEY, VALUE CHAR(90) NOT NULL, SYMBOL CHAR(9) NOT NULL);")
 
 
-# Printing of menu
+def inserting_vals():
+    # Inserting default Stock values
+    mycur.execute("INSERT INTO STOCKS VALUES('Apple','139','AAPL');")
+    mycur.execute(
+        "INSERT INTO STOCKS VALUES('Saudi Aramco', '9.13', '2222.sr')")
+    mycur.execute("INSERT INTO STOCKS VALUES('Microsoft', '221.36', 'MSFT')")
+    mycur.execute("INSERT INTO STOCKS VALUES('Google', '86.70', 'GOOG')")
+    mycur.execute("INSERT INTO STOCKS VALUES('Amazon', '90.98', 'AMZN')")
+    mycur.execute("INSERT INTO STOCKS VALUES('Tesla', '207.47', 'TSLA')")
+    mycur.execute(
+        "INSERT INTO STOCKS VALUES('Berkshire Hathway', '287', 'BRK')")
+    mycur.execute(
+        "INSERT INTO STOCKS VALUES('Unitded Health', '538.71', 'UNH')")
+    mycur.execute("INSERT INTO STOCKS VALUES('Exxon Mobil', '112.31', 'XOM')")
+    mycur.execute("INSERT INTO STOCKS VALUES('Johnson', '171.48', 'JNJ')")
+    mycur.execute("INSERT INTO STOCKS VALUES('Visa', '196.98', 'V')")
+    mycur.execute("INSERT INTO STOCKS VALUES('JPMorgan', '130.58', 'JPM')")
+    mycur.execute("INSERT INTO STOCKS VALUES('Walmart', '140.97', 'WMT')")
+    mycur.execute("INSERT INTO STOCKS VALUES('Nvidia', '141.56', 'NVDA')")
+    mycur.execute("INSERT INTO STOCKS VALUES('Chevron', '183.42', 'CVX')")
+    mycur.execute("INSERT INTO STOCKS VALUES('Eli Lilly', '357.41', 'LLY')")
+    mycur.execute("INSERT INTO STOCKS VALUES('LVMH', '663.61', 'MCPA')")
+    mycur.execute("INSERT INTO STOCKS VALUES('TSCM', '62.48', 'TSM')")
 
-print("\n\n\n")
-print("******************************************************")
-print("         -------------------------------------        ")
-print("                 Welcome To Stock Arena               ")
-print("               Your Turn To Become Richer             ")
-print()
-print("                 By Tushar and Nischit                ")
-print("         -------------------------------------        ")
-print("******************************************************")
+    # Inserting one default User
+    mycur.execute(
+        "INSERT INTO USERS VALUES('1234567890','m','1234','m','m','m','1234','1200');")
+
+    mycon.commit()
+
+
+# To prevent Data Overlap Error in MYSQL(repeated entries)
+first_time = 0
+if first_time == 0:
+    first_time += 1
+else:
+    inserting_vals()
 
 
 # Functions used
+
+def introductory_display():
+    print("\n\n\n")
+    print("******************************************************")
+    print("         -------------------------------------        ")
+    print("                 Welcome To Stock Arena               ")
+    print("               Your Turn To Become Richer             ")
+    print()
+    print("                 By Tushar and Nischit                ")
+    print("         -------------------------------------        ")
+    print("******************************************************")
+
+
+# Printing of menu
+introductory_display()
+
 
 def display_main():
     print("\n\n\n")
@@ -78,6 +98,76 @@ display_main()
 selection = input("Please enter a menu option:")
 
 
+def display_stocks():
+    # Displaying the stocks
+    print()
+    mycur.execute("SELECT * FROM STOCKS;")
+    displayingstks = mycur.fetchall()
+    if len(displayingstks) == 0:
+        print("No stocks have been added yet")
+    else:
+        print("Stock Name                   ",
+              "Stock Value                  ", "Stock Symbol                  ")
+        for i in displayingstks:
+            for j in i:
+                spaces = 30 - len(j)
+                print(j, end=" " * spaces)
+            print()
+
+
+def add_stk():
+    # Stock name
+    stkname = input("Please enter stock name:")
+    while stkname.isalpha() == False:
+        print("Please enter a valid name.")
+        stkname = input("Please enter the real name of the stock: ")
+
+    mycur.execute("SELECT STKNAME FROM STOCKS;")
+    stocks_existing = mycur.fetchall()
+    temp_list_stocks = []
+    for i in stocks_existing:
+        for j in i:
+            temp_list_stocks.append(j)
+
+    while stkname in temp_list_stocks:
+        print("Stock already exists!")
+        break
+    else:
+        return stkname
+
+
+def stk_details(stockname):
+    # Stock value + Checking if the value entered is valid
+    stkval = input(
+        "Please enter stock value (in $):")
+
+    while True:
+        try:
+            float(stkval)
+            break
+        except ValueError:
+            print("You've entered an invalid price of the stock.")
+            stkval = input(
+                "Please enter a valid price of the stock (in $):")
+
+    # Stock Symbol
+    stksym = input("Please enter a symbol for the stock:")
+    while stksym.isalpha() == False:
+        print("You've entered an invalid symbol.")
+        stksym = input(
+            "Please enter a valid symbol for the stock:")
+
+    mycur.execute(
+        "INSERT INTO STOCKS VALUES('{0}','{1}','{2}');".format(stockname.capitalize(), stkval, stksym.upper()))
+    # mycon.commit()
+
+    print(
+        f"{stockname.capitalize()} stock has been successfully added to the market!")
+
+
+new_var_selec = 0
+
+
 def submenu(user, pinno):
     while True:
         """
@@ -89,18 +179,33 @@ def submenu(user, pinno):
         6) Return to Main Menu
 
         """
-        print("\n\n\n")
-        display_submenu()
-        print("\n\n\n")
-        selec = input("Please enter a menu option:")
-        print()
+        global new_var_selec
+
+        try:
+            int(selec)
+        except UnboundLocalError:
+            print("\n\n\n")
+            display_submenu()
+            print("\n\n\n")
+            selec = input("Please enter a menu option:")
+
+        if new_var_selec != 0:
+            infloop_prev = selec
+        else:
+            infloop_prev = '18'
+
+        if infloop_prev == selec:
+            print("\n\n\n")
+            display_submenu()
+            print("\n\n\n")
+            selec = input("Please enter a menu option:")
+
         if selec == '1':
             # Diplaying Balance
             mycur.execute(
                 "SELECT BALANCE FROM USERS WHERE USERNAME = '{}';".format(user))
             balance_report = mycur.fetchall()
-            for i in balance_report:
-                print(f"These is your current balance ${i[0]}.")
+            print(f"These is your current balance ${balance_report[0][0]}.")
 
         elif selec == '2':
             deposit = input("Please enter amount of money to be deposited:")
@@ -110,7 +215,7 @@ def submenu(user, pinno):
                 deposit = input("Please enter a valid amount: ")
 
             pin_entered = input("Please enter your PIN number:")
-            while pin_entered != pinno:
+            while pin_entered != pinno[0]:
                 print("The entered pin is incorrect.")
                 pin_entered = input("Please enter your correct pin:")
             else:
@@ -121,6 +226,7 @@ def submenu(user, pinno):
                 mycur.execute("UPDATE USERS SET BALANCE = '{}' WHERE USERNAME = '{}'".format(
                     str(net_balance), user))
                 print(f"Your current balance is: ${net_balance}")
+            mycon.commit()
 
         elif selec == '3':
             withdraw = input("Please enter amount of money to be withdrawn:")
@@ -130,7 +236,7 @@ def submenu(user, pinno):
                 withdraw = input("Please enter a valid amount: ")
 
             pin_entered = input("Please enter your PIN number:")
-            while pin_entered != pinno:
+            while pin_entered != pinno[0]:
                 print("The entered pin is incorrect.")
                 pin_entered = input("Please enter your correct pin:")
             else:
@@ -144,6 +250,7 @@ def submenu(user, pinno):
                     mycur.execute("UPDATE USERS SET BALANCE = '{}' WHERE USERNAME = '{}'".format(
                         str(net_balance), user))
                     print(f"Your current balance is: ${net_balance}")
+            mycon.commit()
 
         elif selec == '4':
             replyc = input("Are you sure? Y/N?:")
@@ -160,26 +267,20 @@ def submenu(user, pinno):
                     break
                 else:
                     print()
+            mycon.commit()
 
         elif selec == '5':
-            # Displaying the stocks
-            print()
-            mycur.execute("SELECT * FROM STOCKS;")
-            displayingstks = mycur.fetchall()
-            if len(displayingstks) == 0:
-                print("No stocks have been added yet")
-            else:
-                print("Stock Name                   ",
-                      "Stock Value                  ", "Stock Symbol                  ")
-                for i in displayingstks:
-                    for j in i:
-                        spaces = 30 - len(j)
-                        print(j, end=" " * spaces)
-                    print()
+            display_stocks()
 
         elif selec == '6':
+            display_stocks()
+            print()
+
             stock_to_be_bought = input(
                 "Please enter the stock's name you wish to purchase:")
+            while stock_to_be_bought.isalpha() == False:
+                print("You've entered an invalid stock name.")
+                stock_to_be_bought = input("Please enter a valid stock name:")
 
             mycur.execute("SELECT STKNAME FROM STOCKS;")
             stock_names = mycur.fetchall()
@@ -196,12 +297,19 @@ def submenu(user, pinno):
                     add_new_stock = input("Please enter a valid option:")
                 if add_new_stock.lower() == "y":
                     print("You've returned to the main menu")
+                    break
                 else:
                     stock_to_be_bought = input(
                         "Please enter the stock's name from the above mentioned names:")
             else:
+                quantity = input(
+                    f"Please enter quantity of {stock_to_be_bought.capitalize()}:")
+                while quantity.isnumeric() == False:
+                    print("You've entered an invalid stock quantity.")
+                    quantity = input("Please enter a valid stock quantity:")
+
                 pin_entered = input("Please enter your PIN number:")
-                while pin_entered != pinno:
+                while pin_entered != pinno[0]:
                     print("The entered pin is incorrect.")
                     pin_entered = input("Please enter your correct pin:")
                 else:
@@ -212,7 +320,7 @@ def submenu(user, pinno):
                         "SELECT VALUE FROM STOCKS WHERE STKNAME = '{}'".format(stock_to_be_bought))
                     stock_value = mycur.fetchall()
                     net_balance = float(
-                        balance_report[0][0]) - float(stock_value[0][0])
+                        balance_report[0][0]) - (float(quantity) * float(stock_value[0][0]))
                     if net_balance < 0:
                         print("You've insufficient balance!")
                     else:
@@ -220,73 +328,214 @@ def submenu(user, pinno):
                             str(net_balance), user))
                         print()
                         print(
-                            f"You've successfully bought {stock_to_be_bought} for a price of ${stock_value[0][0]}.")
+                            f"You've successfully bought {stock_to_be_bought} for a price of ${float(quantity) * float(stock_value[0][0])}.")
                         print(f"Your updated balance is $ {str(net_balance)}")
+                    mycon.commit()
 
         elif selec == '7':
-            # Stock name
-            stkname = input("Please enter stock name:")
-            while stkname.isalpha() == False:
-                print("Please enter a valid name.")
-                stkname = input("Please enter the real name of the stock: ")
-
-            # Stock value + Checking if the value entered is valid
-            stkval = input(
-                "Please enter stock value (in $):")
-
-            while True:
-                try:
-                    float(stkval)
-                    break
-                except ValueError:
-                    print("You've entered an invalid price of the stock.")
-                    stkval = input(
-                        "Please enter a valid price of the stock (in $):")
-
-            # Stock Symbol
-            stksym = input("Please enter a symbol for the stock:")
-            while stksym.isalpha() == False:
-                print("You've entered an invalid symbol.")
-                stksym = input(
-                    "Please enter a valid symbol for the stock:")
-
-            print(stkval)
-
-            mycur.execute(
-                "INSERT INTO STOCKS VALUES('{0}','{1}','{2}');".format(stkname.capitalize(), stkval, stksym.upper()))
-            # mycon.commit()
-
-            print(
-                f"The {stkname} stock has been successfully added to the market!")
+            stockname_returned = add_stk()
+            if stockname_returned != None:
+                stk_details(stockname_returned)
+            mycon.commit()
 
         elif selec == '8':
+            display_stocks()
+            print()
 
             # Validating the Stock name
             stkrem = input(
-                "Please enter stock to be removed from the listing:")
+                "Please enter the stock's name that has to be removed from the listing:")
             while stkrem.isalpha() == False:
                 print("Please enter a valid name.")
-                stkname = input("Please enter the real name of the stock: ")
+                stkrem = input("Please enter the real name of the stock: ")
             mycur.execute(
                 "SELECT * FROM STOCKS WHERE STKNAME = '{}'".format(stkrem.capitalize()))
             stkrec = mycur.fetchall()
 
             # Checking and Deleting The Stock
-            if len(stkrec) == 0:
+            if len(stkrem) == 0:
                 print("No such stock exists.")
 
             else:
                 mycur.execute(
                     "DELETE FROM STOCKS WHERE STKNAME = '{}'".format(stkrem))
                 print(
-                    f"The {stkrem} has been successfully removed from the listing!")
+                    f"The {stkrem.capitalize()} has been successfully removed from the listing!")
+            mycon.commit()
 
         elif selec == '9':
             print("You've successfully returned to the main menu!")
             break
 
+        else:
+            options_list = []
+            for i in range(1, 10):
+                options_list.append(str(i))
+            while selec not in options_list:
+                selec = input("Please Enter A Valid Menu Option:")
+                new_var_selec = -1
+            print()
 
+        new_var_selec += 1
+
+
+mycon.commit()
 new_var = 1
+
+
+def sign_up():
+    print("Please enter the following details:-")
+
+    # Name
+    name = input("Please Enter Your Name: ")
+    while name.isalpha() == False:
+        print("You've entered an invalid name.")
+        name = input("Please enter your real name: ")
+
+    print()
+
+    # Username
+    username = input("Please enter a username: ")
+    while username.isspace() == True or username == "":
+        print("You've entered an invalid username.")
+        username = input("Please enter a valid username:")
+    else:
+        mycur.execute("SELECT USERNAME FROM USERS;")
+        users = mycur.fetchall()
+        temp_list_usernames = []
+        for i in users:
+            for j in i:
+                temp_list_usernames.append(j)
+
+        # Checking if Username already exists
+        while username.lower() in temp_list_usernames:
+            print("This username has already been taken.")
+            username = input("Please Enter Another Username:")
+        print()
+
+    print()
+
+    # Password
+    pwd = input("Please Enter A Password:")
+    pwd1 = input("Please Enter The Password Again:")
+
+    # Checking if the Passwords match
+    while pwd != pwd1:
+        print("Both The Passwords Do Not Match")
+        pwd = input("Please Enter A Password:")
+        pwd1 = input("Please Enter The Password Again:")
+    else:
+        print("Your Password has been set successfully!")
+
+    print()
+
+    # Bank Details + Connection
+    bankname = input("Please Enter Your Bank Name:")
+
+    while bankname.isalpha() == False:
+        print("You've entered an invalid name.")
+        bankname = input("Please enter your real name: ")
+
+    # Checking for 'Bank' at the end
+    banktest = bankname.split()
+    if banktest[-1].lower() == "bank":
+        del banktest[-1]
+        "".join(banktest)
+    bankname = banktest
+
+    print()
+
+    # Process
+    accno = input("Please enter your 10-digit account number:")
+
+    # Validating Account number
+    while accno.isnumeric() == False or len(accno) != 10:
+        print("You've entered an incorrent account number.")
+        accno = input("Please enter a valid account number:")
+
+    print()
+
+    # Aadhar number
+    aadhar = input("Please enter your Aadhar number:")
+
+    while aadhar.isnumeric() == False:
+        print("You've entered an invalid Aadhar number.")
+        aadhar = input("Please enter a valid Aadhar number: ")
+
+    mycur.execute("SELECT AADHAR FROM USERS;")
+    aadhars_of_users = mycur.fetchall()
+
+    # Checking if Aadhar is repeated
+    while username.lower() in users:
+        print("This Aadhar has already exists.")
+        aad_reply = input("Existing User? Y/N?")
+        while aad_reply.isalpha() == False:
+            print("You've entered an invalid option.")
+            aad_reply = input("Please enter a valid option:")
+        else:
+            if reply.lower() == "y":
+                print("Then please do proceed to the existing user option.")
+                print()
+                break
+            else:
+                aadhar = input("Please enter your aadhar number again:")
+                print()
+
+    print()
+
+    # PIN number
+    print("Connecting...")
+    pin1 = input("Please enter a PIN No:")
+    while len(pin1) != 4 or pin1 == "":
+        print("Please Enter A Valid PIN")
+        pin1 = input("Please Enter Your PIN No:")
+
+    pin2 = input("Please retype your PIN No to confirm:")
+    while len(pin2) != 4 or pin2 == "":
+        print("Please Enter A Valid PIN")
+        pin2 = input("Please Enter Your PIN No:")
+
+    print()
+
+    # Checking if the PIN No do match
+    while pin1 != pin2:
+        print("Both The PIN Numbers Do Not Match")
+        pin1 = input("Please enter a PIN No:")
+
+        # Validating PIN number
+        while len(pin1) != 4:
+            print("Please Enter A Valid PIN")
+            pin1 = input("Please Enter Your PIN No:")
+
+        pin2 = input("Please retype your PIN No to confirm:")
+
+        # Validating PIN number
+        while len(pin2) != 4:
+            print("Please Enter A Valid PIN")
+            pin2 = input("Please Enter Your PIN No:")
+    else:
+        print("Your PIN No has been set successfully!")
+
+    print()
+
+    # Balance
+    balance = input(
+        "Please enter amount of money you wish to deposit (in $):")
+
+    while balance.isnumeric() == False:
+        print("You've entered an invalid amount.")
+        balance = input("Please Enter a valid amount (in $):")
+
+    mycur.execute(
+        "INSERT INTO USERS VALUES ('{}','{}','{}','{}', '{}', '{}', '{}', '{}')".format(accno, bankname[0], pin1, name, username, pwd, aadhar, balance))
+    print()
+    print(
+        f"You've successfully connected to your account {accno}, of {bankname[0]} bank and deposited ${balance} !")
+    mycon.commit()
+
+    submenu(username, pin1)
+
+
 # Main Loop
 while True:
 
@@ -304,19 +553,22 @@ while True:
         print()
         while usrname_existing not in usernames[0]:
             print("This user doesn't exist!")
-            reply = input("New User? Y/N?")
+            reply = input("New User? Y/N?:")
             while reply.isalpha() == False:
                 print("You've entered an invalid option.")
                 reply = input("Please enter a valid option:")
+
+            if reply.lower() == "y":
+                n = 0
+                sign_up()
+                break
             else:
-                if reply.lower() == "y":
-                    print("Then please do proceed to the sign up option.")
-                    print()
-                    break
-                else:
-                    usrname_existing = input(
-                        "Please enter your username again:")
-                    print()
+                usrname_existing = input(
+                    "Please enter your username again:")
+                print()
+        n = 1
+        if n == 0:
+            continue
 
         # For Password
         mycur.execute("SELECT PASSWD FROM USERS;")
@@ -463,151 +715,8 @@ while True:
             submenu(usrname_existing, pin_recs[0])
 
     elif selection == '2':
-        print("Please enter the following details:-")
-
-        # Name
-        name = input("Please Enter Your Name: ")
-        while name.isalpha() == False:
-            print("You've entered an invalid name.")
-            name = input("Please enter your real name: ")
-
-        print()
-
-        # Username
-        username = input("Please enter a username: ")
-        while username.isspace() == True or username == "":
-            print("You've entered an invalid username.")
-            username = input("Please enter a valid username:")
-        else:
-            mycur.execute("SELECT USERNAME FROM USERS;")
-            users = mycur.fetchall()
-            # Checking if Username already exists
-            while username.lower() in users:
-                print("This username has already been taken.")
-                username = input("Please Enter Another Username:")
-            print()
-
-        print()
-
-        # Password
-        pwd = input("Please Enter A Password:")
-        pwd1 = input("Please Enter The Password Again:")
-
-        # Checking if the Passwords match
-        while pwd != pwd1:
-            print("Both The Passwords Do Not Match")
-            pwd = input("Please Enter A Password:")
-            pwd1 = input("Please Enter The Password Again:")
-        else:
-            print("Your Password has been set successfully!")
-
-        print()
-
-        # Bank Details + Connection
-        bankname = input("Please Enter Your Bank Name:")
-
-        while bankname.isalpha() == False:
-            print("You've entered an invalid name.")
-            bankname = input("Please enter your real name: ")
-
-        # Checking for 'Bank' at the end
-        banktest = bankname.split()
-        if banktest[-1].lower() == "bank":
-            del banktest[-1]
-            "".join(banktest)
-        bankname = banktest
-
-        print()
-
-        # Process
-        accno = input("Please enter your 10-digit account number:")
-
-        # Validating Account number
-        while accno.isnumeric() == False or len(accno) != 10:
-            print("You've entered an incorrent account number.")
-            accno = input("Please enter a valid account number:")
-
-        print()
-
-        # Aadhar number
-        aadhar = input("Please enter your Aadhar number:")
-
-        while aadhar.isnumeric() == False:
-            print("You've entered an invalid Aadhar number.")
-            aadhar = input("Please enter a valid Aadhar number: ")
-
-        mycur.execute("SELECT AADHAR FROM USERS;")
-        aadhars_of_users = mycur.fetchall()
-
-        # Checking if Aadhar is repeated
-        while username.lower() in users:
-            print("This Aadhar has already exists.")
-            aad_reply = input("Existing User? Y/N?")
-            while aad_reply.isalpha() == False:
-                print("You've entered an invalid option.")
-                aad_reply = input("Please enter a valid option:")
-            else:
-                if reply.lower() == "y":
-                    print("Then please do proceed to the existing user option.")
-                    print()
-                    break
-                else:
-                    aadhar = input("Please enter your aadhar number again:")
-                    print()
-
-        print()
-
-        # PIN number
-        print("Connecting...")
-        pin1 = input("Please enter a PIN No:")
-        while len(pin1) != 4 or pin1 == "":
-            print("Please Enter A Valid PIN")
-            pin1 = input("Please Enter Your PIN No:")
-
-        pin2 = input("Please retype your PIN No to confirm:")
-        while len(pin2) != 4 or pin2 == "":
-            print("Please Enter A Valid PIN")
-            pin2 = input("Please Enter Your PIN No:")
-
-        print()
-
-        # Checking if the PIN No do match
-        while pin1 != pin2:
-            print("Both The PIN Numbers Do Not Match")
-            pin1 = input("Please enter a PIN No:")
-
-            # Validating PIN number
-            while len(pin1) != 4:
-                print("Please Enter A Valid PIN")
-                pin1 = input("Please Enter Your PIN No:")
-
-            pin2 = input("Please retype your PIN No to confirm:")
-
-            # Validating PIN number
-            while len(pin2) != 4:
-                print("Please Enter A Valid PIN")
-                pin2 = input("Please Enter Your PIN No:")
-        else:
-            print("Your PIN No has been set successfully!")
-
-        print()
-
-        # Balance
-        balance = input(
-            "Please enter amount of money you wish to deposit (in $):")
-
-        while balance.isnumeric() == False:
-            print("You've entered an invalid amount.")
-            balance = input("Please Enter a valid amount (in $):")
-
-        mycur.execute(
-            "INSERT INTO USERS VALUES ('{}','{}','{}','{}', '{}', '{}', '{}', '{}')".format(accno, bankname[0], pin1, name, username, pwd, aadhar, balance))
-        print()
-        print(
-            f"You've successfully connected to your account {accno}, of {bankname[0]} bank and deposited ${balance} !")
-
-        submenu(username, pin1)
-
+        sign_up()
+        mycon.commit()
     elif selection == '3':
         break
 
@@ -616,5 +725,6 @@ while True:
         new_var = 1
         print()
 
+mycon.commit()
 
 print("You've exited the program successfully! Thank you for using Stock Arena!")

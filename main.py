@@ -1,5 +1,5 @@
 # Importing Modules And Performing Basic Operations
-
+import math
 import mysql.connector as ms
 mycon = ms.connect(host="localhost", user="root",
                    passwd="root")
@@ -127,9 +127,9 @@ def add_stk():
     temp_list_stocks = []
     for i in stocks_existing:
         for j in i:
-            temp_list_stocks.append(j)
+            temp_list_stocks.append(j.lower())
 
-    while stkname in temp_list_stocks:
+    while stkname.lower() in temp_list_stocks:
         print("Stock already exists!")
         break
     else:
@@ -245,7 +245,8 @@ def submenu(user, pinno):
                 balance_report = mycur.fetchall()
                 net_balance = float(balance_report[0][0]) - float(withdraw)
                 if net_balance < 0:
-                    print("You've insufficient balance!")
+                    print(
+                        f"You've insufficient amount ${math.fabs(net_balance)}!")
                 else:
                     mycur.execute("UPDATE USERS SET BALANCE = '{}' WHERE USERNAME = '{}'".format(
                         str(net_balance), user))
@@ -254,7 +255,7 @@ def submenu(user, pinno):
 
         elif selec == '4':
             replyc = input("Are you sure? Y/N?:")
-            while replyc.isalpha() == False:
+            while replyc.isalpha() == False or replyc.lower() not in ['y', 'n']:
                 print("You've entered an invalid option.")
                 replyc = input("Please enter a valid option:")
             else:
@@ -291,22 +292,31 @@ def submenu(user, pinno):
             while stock_to_be_bought.lower() not in temp_list:
                 print("This stock does not exist!")
                 print("Please choose from the above mentioned stocks or add new stock.")
-                add_new_stock = input("Add new Stock? Y/N?")
-                while add_new_stock.isalpha() == False:
+                add_new_stock = input("Add new Stock? Y/N?:")
+
+                while add_new_stock.isalpha() == False or add_new_stock.lower() not in ['y', 'n']:
                     print("You've entered an invalid option.")
                     add_new_stock = input("Please enter a valid option:")
+
                 if add_new_stock.lower() == "y":
-                    print("You've returned to the main menu")
+                    stockname_returned = add_stk()
+                    if stockname_returned != None:
+                        stk_details(stockname_returned)
+                    mycon.commit()
                     break
                 else:
                     stock_to_be_bought = input(
                         "Please enter the stock's name from the above mentioned names:")
             else:
-                quantity = input(
-                    f"Please enter quantity of {stock_to_be_bought.capitalize()}:")
-                while quantity.isnumeric() == False:
-                    print("You've entered an invalid stock quantity.")
-                    quantity = input("Please enter a valid stock quantity:")
+                quantity = float(input(
+                    f"Please enter quantity of {stock_to_be_bought.capitalize()}:"))
+                while math.ceil(quantity) != math.floor(quantity) or quantity < 1:
+                    while str(quantity).isnumeric() == False:
+                        print("You've entered an invalid stock quantity.")
+                        quantity = float(input(
+                            "Please enter a valid stock quantity:"))
+                        if math.ceil(quantity) == math.floor(quantity):
+                            break
 
                 pin_entered = input("Please enter your PIN number:")
                 while pin_entered != pinno[0]:
@@ -322,7 +332,8 @@ def submenu(user, pinno):
                     net_balance = float(
                         balance_report[0][0]) - (float(quantity) * float(stock_value[0][0]))
                     if net_balance < 0:
-                        print("You've insufficient balance!")
+                        print(
+                            f"You've insufficient amount ${math.fabs(net_balance)}!")
                     else:
                         mycur.execute("UPDATE USERS SET BALANCE = '{}' WHERE USERNAME = '{}'".format(
                             str(net_balance), user))
@@ -469,7 +480,7 @@ def sign_up():
     while username.lower() in users:
         print("This Aadhar has already exists.")
         aad_reply = input("Existing User? Y/N?")
-        while aad_reply.isalpha() == False:
+        while aad_reply.isalpha() == False or aad_reply.lower() not in ['y', 'n']:
             print("You've entered an invalid option.")
             aad_reply = input("Please enter a valid option:")
         else:
@@ -522,9 +533,14 @@ def sign_up():
     balance = input(
         "Please enter amount of money you wish to deposit (in $):")
 
-    while balance.isnumeric() == False:
-        print("You've entered an invalid amount.")
-        balance = input("Please Enter a valid amount (in $):")
+    try:
+        float(balance)
+    except ValueError:
+        while balance.isnumeric() == False:
+            print("You've entered an invalid amount.")
+            balance = input("Please Enter a valid amount (in $):")
+
+    balance = balance.lstrip("0")
 
     mycur.execute(
         "INSERT INTO USERS VALUES ('{}','{}','{}','{}', '{}', '{}', '{}', '{}')".format(accno, bankname[0], pin1, name, username, pwd, aadhar, balance))
@@ -549,12 +565,15 @@ while True:
         # For Username
         mycur.execute("SELECT USERNAME FROM USERS;")
         usernames = mycur.fetchall()
+        temp_list_usn = []
+        for i in usernames:
+            for j in i:
+                temp_list_usn.append(j)
         usrname_existing = input("Please enter your username:")
-        print()
-        while usrname_existing not in usernames[0]:
+        while usrname_existing not in temp_list_usn:
             print("This user doesn't exist!")
             reply = input("New User? Y/N?:")
-            while reply.isalpha() == False:
+            while reply.isalpha() == False or reply.lower() not in ['y', 'n']:
                 print("You've entered an invalid option.")
                 reply = input("Please enter a valid option:")
 
@@ -571,14 +590,19 @@ while True:
             continue
 
         # For Password
-        mycur.execute("SELECT PASSWD FROM USERS;")
+        mycur.execute(
+            "SELECT PASSWD FROM USERS WHERE USERNAME = '{}';".format(usrname_existing))
         passwords = mycur.fetchall()
         pwd_existing = input("Please enter your password:")
+        temp_list_pass = []
+        for i in passwords:
+            for j in i:
+                temp_list_pass.append(j)
         print()
-        while pwd_existing not in passwords[0]:
+        while pwd_existing not in temp_list_pass:
             print("You've entered an incorrect password!")
             replyp = input("Forgot Password? Y/N?")
-            while replyp.isalpha() == False:
+            while replyp.isalpha() == False or replyp.lower() not in ['y', 'n']:
                 print("You've entered an invalid option.")
                 replyp = input("Please enter a valid option:")
             else:
@@ -605,14 +629,13 @@ while True:
                         print(
                             "Your account doesn't exist please create a new account!")
                         replya = input("New User? Y/N?")
-                        while replya.isalpha() == False:
+                        while replya.isalpha() == False or replya.lower() not in ['y', 'n']:
                             print("You've entered an invalid option.")
                             replya = input("Please enter a valid option:")
                         else:
                             if replya.lower() == "y":
-                                print(
-                                    "Then please do proceed to the sign up option.")
                                 print()
+                                sign_up()
                                 break
                             else:
                                 accno = input(
@@ -640,15 +663,14 @@ while True:
                     while aadhar_no != aadhars_of_users[0][0]:
                         print(
                             "Your account doesn't exist please create a new account!")
-                        replya = input("New User? Y/N?")
-                        while replya.isalpha() == False:
+                        replyc = input("New User? Y/N?")
+                        while replyc.isalpha() == False or replyc.lower() not in ['y', 'n']:
                             print("You've entered an invalid option.")
-                            replya = input("Please enter a valid option:")
+                            replyc = input("Please enter a valid option:")
                         else:
-                            if replya.lower() == "y":
-                                print(
-                                    "Then please do proceed to the sign up option.")
+                            if replyc.lower() == "y":
                                 print()
+                                sign_up()
                                 break
                             else:
                                 accno = input(
@@ -674,17 +696,17 @@ while True:
                         "SELECT PINNO FROM USERS WHERE USERNAME = '{}';".format(usrname_existing))
                     pin_of_users = mycur.fetchall()
 
-                    # Checking if Aadhar is repeated
+                    # Checking if the PIN Nos match
                     while pin_no != pin_of_users[0][0]:
                         print(
                             "Your PIN No doesn't match!")
-                        accno = input(
+                        pin_no = input(
                             "Please enter your PIN No again:")
                         print()
-                        while accno.isnumeric() == False or len(accno) != 4:
+                        while pin_no.isnumeric() == False or len(pin_no) != 4:
                             print(
                                 "You've entered an incorrent PIN No.")
-                            accno = input(
+                            pin_no = input(
                                 "Please enter a valid PIN No:")
 
                     pwd_new = input("Please enter new password:")
@@ -726,5 +748,5 @@ while True:
         print()
 
 mycon.commit()
-
+print()
 print("You've exited the program successfully! Thank you for using Stock Arena!")

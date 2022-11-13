@@ -377,6 +377,7 @@ def submenu(user, pinno):
 
         elif selec == '9':
             print("You've successfully returned to the main menu!")
+            new_var_selec = 0
             break
 
         else:

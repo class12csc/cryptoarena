@@ -265,10 +265,11 @@ def submenu(user, pinno):
                         "DELETE FROM USERS WHERE USERNAME = '{}'".format(user))
                     print(
                         "Your account has been deleted successfully. Thank you for being with Stock Arena!")
+                    mycon.commit()
+
                     break
                 else:
                     print()
-            mycon.commit()
 
         elif selec == '5':
             display_stocks()
@@ -548,8 +549,10 @@ def sign_up():
     print(
         f"You've successfully connected to your account {accno}, of {bankname[0]} bank and deposited ${balance} !")
     mycon.commit()
+    pin_ls = []
+    pin_ls.append(pin1)
 
-    submenu(username, pin1)
+    submenu(username, pin_ls)
 
 
 # Main Loop

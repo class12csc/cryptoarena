@@ -4,7 +4,7 @@ import mysql.connector as ms
 mycon = ms.connect(host="localhost", user="root",
                    passwd="root")
 mycur = mycon.cursor()
-mycur.execute("CREATE DATABASE IF NOT EXISTS STOCKS;")
+mycur.execute("CREATE DATABASE IF NOT EXISTS FINANCE;")
 mycur.execute("USE STOCKS;")
 mycur.execute(
     "CREATE TABLE IF NOT EXISTS USERS (ACCNO VARCHAR(10) NOT NULL, BANKNAME VARCHAR(90) NOT NULL, PINNO CHAR(4) NOT NULL, NAME VARCHAR(90) NOT NULL, USERNAME VARCHAR(90) PRIMARY KEY, PASSWD VARCHAR(90) NOT NULL, AADHAR VARCHAR(12), BALANCE VARCHAR(18));")
@@ -38,17 +38,16 @@ def inserting_vals():
 
     # Inserting one default User
     mycur.execute(
-        "INSERT INTO USERS VALUES('1234567890','m','1234','m','m','m','1234','1200');")
+        "INSERT INTO USERS VALUES('1234567890','Chase','1234','Admin','root','root','1234','1200');")
 
     mycon.commit()
 
 
-# To prevent Data Overlap Error in MYSQL(repeated entries)
-first_time = 0
-if first_time == 0:
-    first_time += 1
-else:
+# # To prevent Data Overlap Error in MYSQL(repeated entries)
+try:
     inserting_vals()
+except ms.errors.IntegrityError:
+    pass
 
 
 # Functions used
@@ -57,7 +56,7 @@ def introductory_display():
     print("\n\n\n")
     print("******************************************************")
     print("         -------------------------------------        ")
-    print("                 Welcome To Stock Arena               ")
+    print("              Welcome To The Finance Broker           ")
     print("               Your Turn To Become Richer             ")
     print()
     print("                 By Tushar and Nischit                ")
@@ -78,7 +77,7 @@ def display_main():
     print("\n\n\n")
 
 
-def display_submenu():
+def display_submenu_admin():
     print("                        Account Menu                  ")
     print("                     1.Show Balance                   ")
     print("                     2.Deposit Money                  ")
@@ -89,6 +88,16 @@ def display_submenu():
     print("                     7.Add New Stock                  ")
     print("                     8.Remove Existing Stock          ")
     print("                     9.Logout                         ")
+
+
+def display_submenu():
+    print("                        Account Menu                  ")
+    print("                     1.Show Balance                   ")
+    print("                     2.Deposit Money                  ")
+    print("                     3.Withdraw Money                 ")
+    print("                     4.Show Available Stocks          ")
+    print("                     5.Buy New Stock                  ")
+    print("                     6.Logout                         ")
 
 
 # Main Code Starts From Here
@@ -167,8 +176,12 @@ def stk_details(stockname):
 
 new_var_selec = 0
 
+# Admin credentials
+admin_un = "root"
+admin_pass = "root"
 
-def submenu(user, pinno):
+
+def submenu_admin(user, pinno):
     while True:
         """
         1) Show balance
@@ -185,7 +198,7 @@ def submenu(user, pinno):
             int(selec)
         except UnboundLocalError:
             print("\n\n\n")
-            display_submenu()
+            display_submenu_admin()
             print("\n\n\n")
             selec = input("Please enter a menu option:")
 
@@ -196,16 +209,17 @@ def submenu(user, pinno):
 
         if infloop_prev == selec:
             print("\n\n\n")
-            display_submenu()
+            display_submenu_admin()
             print("\n\n\n")
             selec = input("Please enter a menu option:")
+            print(selec)
 
         if selec == '1':
             # Diplaying Balance
             mycur.execute(
                 "SELECT BALANCE FROM USERS WHERE USERNAME = '{}';".format(user))
             balance_report = mycur.fetchall()
-            print(f"These is your current balance ${balance_report[0][0]}.")
+            print(f"This is your current balance ${balance_report[0][0]}.")
 
         elif selec == '2':
             deposit = input("Please enter amount of money to be deposited:")
@@ -392,6 +406,181 @@ def submenu(user, pinno):
         new_var_selec += 1
 
 
+def submenu(user, pinno):
+    while True:
+        """
+        1) Show balance
+        2) Show available stock
+        3) Buy Stock
+        4) Add
+        5) Remove
+        6) Return to Main Menu
+
+        """
+        global new_var_selec
+
+        try:
+            int(selec)
+        except UnboundLocalError:
+            print("\n\n\n")
+            display_submenu()
+            print("\n\n\n")
+            selec = input("Please enter a menu option:")
+
+        if new_var_selec != 0:
+            infloop_prev = selec
+        else:
+            infloop_prev = '18'
+
+        if infloop_prev == selec:
+            print("\n\n\n")
+            display_submenu()
+            print("\n\n\n")
+            selec = input("Please enter a menu option:")
+
+        if selec == '1':
+            # Diplaying Balance
+            mycur.execute(
+                "SELECT BALANCE FROM USERS WHERE USERNAME = '{}';".format(user))
+            balance_report = mycur.fetchall()
+            print(f"This is your current balance ${balance_report[0][0]}.")
+
+        elif selec == '2':
+            deposit = input("Please enter amount of money to be deposited:")
+
+            while deposit.isnumeric() == False:
+                print("You've entered an invalid amount.")
+                deposit = input("Please enter a valid amount: ")
+
+            pin_entered = input("Please enter your PIN number:")
+            while pin_entered != pinno[0]:
+                print("The entered pin is incorrect.")
+                pin_entered = input("Please enter your correct pin:")
+            else:
+                mycur.execute(
+                    "SELECT BALANCE FROM USERS WHERE USERNAME = '{}';".format(user))
+                balance_report = mycur.fetchall()
+                net_balance = float(balance_report[0][0]) + float(deposit)
+                mycur.execute("UPDATE USERS SET BALANCE = '{}' WHERE USERNAME = '{}'".format(
+                    str(net_balance), user))
+                print(f"Your current balance is: ${net_balance}")
+            mycon.commit()
+
+        elif selec == '3':
+            withdraw = input("Please enter amount of money to be withdrawn:")
+
+            while withdraw.isnumeric() == False:
+                print("You've entered an invalid amount.")
+                withdraw = input("Please enter a valid amount: ")
+
+            pin_entered = input("Please enter your PIN number:")
+            while pin_entered != pinno[0]:
+                print("The entered pin is incorrect.")
+                pin_entered = input("Please enter your correct pin:")
+            else:
+                mycur.execute(
+                    "SELECT BALANCE FROM USERS WHERE USERNAME = '{}';".format(user))
+                balance_report = mycur.fetchall()
+                net_balance = float(balance_report[0][0]) - float(withdraw)
+                if net_balance < 0:
+                    print(
+                        f"You've insufficient amount ${math.fabs(net_balance)}!")
+                else:
+                    mycur.execute("UPDATE USERS SET BALANCE = '{}' WHERE USERNAME = '{}'".format(
+                        str(net_balance), user))
+                    print(f"Your current balance is: ${net_balance}")
+            mycon.commit()
+
+        elif selec == '4':
+            display_stocks()
+
+        elif selec == '5':
+            display_stocks()
+            print()
+
+            stock_to_be_bought = input(
+                "Please enter the stock's name you wish to purchase:")
+            while stock_to_be_bought.isalpha() == False:
+                print("You've entered an invalid stock name.")
+                stock_to_be_bought = input("Please enter a valid stock name:")
+
+            mycur.execute("SELECT STKNAME FROM STOCKS;")
+            stock_names = mycur.fetchall()
+            temp_list = []
+            for i in stock_names:
+                for j in i:
+                    temp_list.append(j.lower())
+            while stock_to_be_bought.lower() not in temp_list:
+                print("This stock does not exist!")
+                print("Please choose from the above mentioned stocks or add new stock.")
+                add_new_stock = input("Add new Stock? Y/N?:")
+
+                while add_new_stock.isalpha() == False or add_new_stock.lower() not in ['y', 'n']:
+                    print("You've entered an invalid option.")
+                    add_new_stock = input("Please enter a valid option:")
+
+                if add_new_stock.lower() == "y":
+                    stockname_returned = add_stk()
+                    if stockname_returned != None:
+                        stk_details(stockname_returned)
+                    mycon.commit()
+                    break
+                else:
+                    stock_to_be_bought = input(
+                        "Please enter the stock's name from the above mentioned names:")
+            else:
+                quantity = float(input(
+                    f"Please enter quantity of {stock_to_be_bought.capitalize()}:"))
+                while math.ceil(quantity) != math.floor(quantity) or quantity < 1:
+                    while str(quantity).isnumeric() == False:
+                        print("You've entered an invalid stock quantity.")
+                        quantity = float(input(
+                            "Please enter a valid stock quantity:"))
+                        if math.ceil(quantity) == math.floor(quantity):
+                            break
+
+                pin_entered = input("Please enter your PIN number:")
+                while pin_entered != pinno[0]:
+                    print("The entered pin is incorrect.")
+                    pin_entered = input("Please enter your correct pin:")
+                else:
+                    mycur.execute(
+                        "SELECT BALANCE FROM USERS WHERE USERNAME = '{}';".format(user))
+                    balance_report = mycur.fetchall()
+                    mycur.execute(
+                        "SELECT VALUE FROM STOCKS WHERE STKNAME = '{}'".format(stock_to_be_bought))
+                    stock_value = mycur.fetchall()
+                    net_balance = float(
+                        balance_report[0][0]) - (float(quantity) * float(stock_value[0][0]))
+                    if net_balance < 0:
+                        print(
+                            f"You've insufficient amount ${math.fabs(net_balance)}!")
+                    else:
+                        mycur.execute("UPDATE USERS SET BALANCE = '{}' WHERE USERNAME = '{}'".format(
+                            str(net_balance), user))
+                        print()
+                        print(
+                            f"You've successfully bought {stock_to_be_bought} for a price of ${float(quantity) * float(stock_value[0][0])}.")
+                        print(f"Your updated balance is $ {str(net_balance)}")
+                    mycon.commit()
+
+        elif selec == '6':
+            print("You've successfully returned to the main menu!")
+            new_var_selec = 0
+            break
+
+        else:
+            options_list = []
+            for i in range(1, 10):
+                options_list.append(str(i))
+            while selec not in options_list:
+                selec = input("Please Enter A Valid Menu Option:")
+                new_var_selec = -1
+            print()
+
+        new_var_selec += 1
+
+
 mycon.commit()
 new_var = 1
 
@@ -447,7 +636,7 @@ def sign_up():
 
     while bankname.isalpha() == False:
         print("You've entered an invalid name.")
-        bankname = input("Please enter your real name: ")
+        bankname = input("Please enter a valid bank name: ")
 
     # Checking for 'Bank' at the end
     banktest = bankname.split()
@@ -566,6 +755,7 @@ while True:
         selection = input("Please enter a menu option:")
 
     if selection == '1':
+
         # For Username
         mycur.execute("SELECT USERNAME FROM USERS;")
         usernames = mycur.fetchall()
@@ -573,7 +763,9 @@ while True:
         for i in usernames:
             for j in i:
                 temp_list_usn.append(j)
+
         usrname_existing = input("Please enter your username:")
+
         while usrname_existing not in temp_list_usn:
             print("This user doesn't exist!")
             reply = input("New User? Y/N?:")
@@ -603,6 +795,7 @@ while True:
             for j in i:
                 temp_list_pass.append(j)
         print()
+
         while pwd_existing not in temp_list_pass:
             print("You've entered an incorrect password!")
             replyp = input("Forgot Password? Y/N?")
@@ -735,14 +928,19 @@ while True:
 
         else:
             print("You've successfully logged in to your account!")
-            mycur.execute(
-                "SELECT PINNO FROM USERS WHERE USERNAME = '{}'".format(usrname_existing))
-            pin_recs = mycur.fetchall()
-            submenu(usrname_existing, pin_recs[0])
+            if usrname_existing == admin_un and pwd_existing == admin_pass:
+                pin_admin = ['1234']
+                submenu_admin(admin_un, pin_admin)
+            else:
+                mycur.execute(
+                    "SELECT PINNO FROM USERS WHERE USERNAME = '{}'".format(usrname_existing))
+                pin_recs = mycur.fetchall()
+                submenu(usrname_existing, pin_recs[0])
 
     elif selection == '2':
         sign_up()
         mycon.commit()
+
     elif selection == '3':
         break
 

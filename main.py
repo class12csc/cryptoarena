@@ -1,11 +1,12 @@
 # Importing Modules And Performing Basic Operations
 import math
 import mysql.connector as ms
+import random
 mycon = ms.connect(host="localhost", user="root",
                    passwd="root")
 mycur = mycon.cursor()
 mycur.execute("CREATE DATABASE IF NOT EXISTS FINANCE;")
-mycur.execute("USE STOCKS;")
+mycur.execute("USE FINANCE;")
 mycur.execute(
     "CREATE TABLE IF NOT EXISTS USERS (ACCNO VARCHAR(10) NOT NULL, BANKNAME VARCHAR(90) NOT NULL, PINNO CHAR(4) NOT NULL, NAME VARCHAR(90) NOT NULL, USERNAME VARCHAR(90) PRIMARY KEY, PASSWD VARCHAR(90) NOT NULL, AADHAR VARCHAR(12), BALANCE VARCHAR(18));")
 mycur.execute(
@@ -38,7 +39,7 @@ def inserting_vals():
 
     # Inserting one default User
     mycur.execute(
-        "INSERT INTO USERS VALUES('1234567890','Chase','1234','Admin','root','root','1234','1200');")
+        "INSERT INTO USERS VALUES('1234567890','Chase','1234','Admin','admin','admin','1234','1200');")
 
     mycon.commit()
 
@@ -68,11 +69,20 @@ def introductory_display():
 introductory_display()
 
 
-def display_main():
+def display_main_user():
     print("\n\n\n")
     print("                          Main Menu                   ")
     print("                     1.Existing User? Login           ")
     print("                     2.New User? Sign Up              ")
+    print("                     3.Exit                           ")
+    print("\n\n\n")
+
+
+def display_main():
+    print("\n\n\n")
+    print("                          Main Menu                   ")
+    print("                     1.Admin Login                    ")
+    print("                     2.User Login                     ")
     print("                     3.Exit                           ")
     print("\n\n\n")
 
@@ -100,7 +110,21 @@ def display_submenu():
     print("                     6.Logout                         ")
 
 
-# Main Code Starts From Here
+def stock_val_update():
+    rand_no = round(random.random(), 2)
+    add_sub = ['+', '-']
+    rand_op = random.choice(add_sub)
+    if rand_op == '+':
+        mycur.execute(
+            "UPDATE STOCKS SET VALUE = VALUE + '{}'".format(rand_no))
+        mycon.commit()
+    else:
+        mycur.execute(
+            "UPDATE STOCKS SET VALUE = VALUE -'{}'".format(rand_no))
+        mycon.commit()
+
+
+stock_val_update()
 
 # Selection Of Option from Menu
 display_main()
@@ -117,10 +141,16 @@ def display_stocks():
     else:
         print("Stock Name                   ",
               "Stock Value                  ", "Stock Symbol                  ")
+
         for i in displayingstks:
             for j in i:
-                spaces = 30 - len(j)
-                print(j, end=" " * spaces)
+                try:
+                    value = round(float(j), 2)
+                    spaces = 30 - len(str(value))
+                    print(value, end=" " * spaces)
+                except ValueError:
+                    spaces = 30 - len(j)
+                    print(j, end=" " * spaces)
             print()
 
 
@@ -177,8 +207,8 @@ def stk_details(stockname):
 new_var_selec = 0
 
 # Admin credentials
-admin_un = "root"
-admin_pass = "root"
+admin_un = "admin"
+admin_pass = "admin"
 
 
 def submenu_admin(user, pinno):
@@ -212,7 +242,6 @@ def submenu_admin(user, pinno):
             display_submenu_admin()
             print("\n\n\n")
             selec = input("Please enter a menu option:")
-            print(selec)
 
         if selec == '1':
             # Diplaying Balance
@@ -268,17 +297,33 @@ def submenu_admin(user, pinno):
             mycon.commit()
 
         elif selec == '4':
-            replyc = input("Are you sure? Y/N?:")
-            while replyc.isalpha() == False or replyc.lower() not in ['y', 'n']:
-                print("You've entered an invalid option.")
-                replyc = input("Please enter a valid option:")
+            user_del = input("Enter username to be deleted:")
+            while user_del.isspace() == True or user_del == "":
+                print("You've entered an invalid username.")
+                user_del = input("Please enter a valid username:")
             else:
-                if replyc.lower() == "y":
+                mycur.execute("SELECT USERNAME FROM USERS;")
+                users_del_list = mycur.fetchall()
+                temp_list_users_del = []
+                for i in users_del_list:
+                    for j in i:
+                        temp_list_users_del.append(j)
+                while user_del.lower() not in temp_list_users_del:
+                    print("This username doesn't exist.")
+                    user_del = input("Please Enter another username:")
+                print()
+
+            replycu = input("Are you sure? Y/N?:")
+            while replycu.isalpha() == False or replycu.lower() not in ['y', 'n']:
+                print("You've entered an invalid option.")
+                replycu = input("Please enter a valid option:")
+            else:
+                if replycu.lower() == "y":
                     print()
                     mycur.execute(
-                        "DELETE FROM USERS WHERE USERNAME = '{}'".format(user))
+                        "DELETE FROM USERS WHERE USERNAME = '{}'".format(user_del))
                     print(
-                        "Your account has been deleted successfully. Thank you for being with Stock Arena!")
+                        f"{user_del.capitalize()} account has been deleted successfully. Thank you for being with Stock Arena!")
                     mycon.commit()
 
                     break
@@ -404,6 +449,7 @@ def submenu_admin(user, pinno):
             print()
 
         new_var_selec += 1
+        stock_val_update()
 
 
 def submenu(user, pinno):
@@ -579,10 +625,12 @@ def submenu(user, pinno):
             print()
 
         new_var_selec += 1
+        stock_val_update()
 
 
 mycon.commit()
 new_var = 1
+new_var_u = 1
 
 
 def sign_up():
@@ -612,7 +660,7 @@ def sign_up():
         # Checking if Username already exists
         while username.lower() in temp_list_usernames:
             print("This username has already been taken.")
-            username = input("Please Enter Another Username:")
+            username = input("Please Enter another username:")
         print()
 
     print()
@@ -755,191 +803,233 @@ while True:
         selection = input("Please enter a menu option:")
 
     if selection == '1':
-
-        # For Username
-        mycur.execute("SELECT USERNAME FROM USERS;")
-        usernames = mycur.fetchall()
-        temp_list_usn = []
-        for i in usernames:
-            for j in i:
-                temp_list_usn.append(j)
-
-        usrname_existing = input("Please enter your username:")
-
-        while usrname_existing not in temp_list_usn:
+        usrname_existing_ad = input("Please enter the admin username:")
+        while usrname_existing_ad != 'admin':
             print("This user doesn't exist!")
-            reply = input("New User? Y/N?:")
-            while reply.isalpha() == False or reply.lower() not in ['y', 'n']:
-                print("You've entered an invalid option.")
-                reply = input("Please enter a valid option:")
+            usrname_existing_ad = input("Please enter a valid username:")
 
-            if reply.lower() == "y":
-                n = 0
-                sign_up()
-                break
-            else:
-                usrname_existing = input(
-                    "Please enter your username again:")
-                print()
-        n = 1
-        if n == 0:
-            continue
+        pwd_existing_ad = input("Please enter the admin password:")
+        while pwd_existing_ad != 'admin':
+            print("The password entered is incorrect!")
+            pwd_existing_ad = input("Please enter the correct password:")
 
-        # For Password
-        mycur.execute(
-            "SELECT PASSWD FROM USERS WHERE USERNAME = '{}';".format(usrname_existing))
-        passwords = mycur.fetchall()
-        pwd_existing = input("Please enter your password:")
-        temp_list_pass = []
-        for i in passwords:
-            for j in i:
-                temp_list_pass.append(j)
         print()
+        print("You've successfully logged in to the admin account!")
 
-        while pwd_existing not in temp_list_pass:
-            print("You've entered an incorrect password!")
-            replyp = input("Forgot Password? Y/N?")
-            while replyp.isalpha() == False or replyp.lower() not in ['y', 'n']:
-                print("You've entered an invalid option.")
-                replyp = input("Please enter a valid option:")
-            else:
-                if replyp.lower() == "y":
-                    print("Then please enter the following details.")
-                    print()
-
-                    # Process
-                    accno = input("Please enter your 10-digit account number:")
-
-                    # Validating Account number
-                    while accno.isnumeric() == False or len(accno) != 10:
-                        print("You've entered an incorrent account number.")
-                        accno = input("Please enter a valid account number:")
-
-                    mycur.execute(
-                        "SELECT ACCNO FROM USERS WHERE USERNAME = '{}'".format(usrname_existing))
-                    accno_rec = mycur.fetchall()
-                    temp_list_acc = []
-                    for i in accno_rec:
-                        for j in i:
-                            temp_list_acc.append(j)
-                    while accno != str(temp_list_acc[0]):
-                        print(
-                            "Your account doesn't exist please create a new account!")
-                        replya = input("New User? Y/N?")
-                        while replya.isalpha() == False or replya.lower() not in ['y', 'n']:
-                            print("You've entered an invalid option.")
-                            replya = input("Please enter a valid option:")
-                        else:
-                            if replya.lower() == "y":
-                                print()
-                                sign_up()
-                                break
-                            else:
-                                accno = input(
-                                    "Please enter your account number again:")
-                                print()
-                                while accno.isnumeric() == False or len(accno) != 10:
-                                    print(
-                                        "You've entered an incorrent account number.")
-                                    accno = input(
-                                        "Please enter a valid account number:")
-
-                    # Aadhar number
-                    aadhar_no = input("Please enter your Aadhar number:")
-
-                    while aadhar_no.isnumeric() == False:
-                        print("You've entered an invalid Aadhar number.")
-                        aadhar_no = input(
-                            "Please enter a valid Aadhar number: ")
-
-                    mycur.execute(
-                        "SELECT AADHAR FROM USERS WHERE USERNAME = '{}';".format(usrname_existing))
-                    aadhars_of_users = mycur.fetchall()
-
-                    # Checking if Aadhar is repeated
-                    while aadhar_no != aadhars_of_users[0][0]:
-                        print(
-                            "Your account doesn't exist please create a new account!")
-                        replyc = input("New User? Y/N?")
-                        while replyc.isalpha() == False or replyc.lower() not in ['y', 'n']:
-                            print("You've entered an invalid option.")
-                            replyc = input("Please enter a valid option:")
-                        else:
-                            if replyc.lower() == "y":
-                                print()
-                                sign_up()
-                                break
-                            else:
-                                accno = input(
-                                    "Please enter your Aadhar number again:")
-                                print()
-                                while accno.isnumeric() == False:
-                                    print(
-                                        "You've entered an incorrent Aadhar number.")
-                                    accno = input(
-                                        "Please enter a valid Aadhar number:")
-
-                    # PIN number
-                    print("Connecting...")
-                    pin_no = input("Please enter your PIN No:")
-
-                    # Validating PIN number
-                    while len(pin_no) != 4:
-                        print("Please Enter A Valid PIN")
-                        pin_no = input("Please Enter Your PIN No:")
-                        break
-
-                    mycur.execute(
-                        "SELECT PINNO FROM USERS WHERE USERNAME = '{}';".format(usrname_existing))
-                    pin_of_users = mycur.fetchall()
-
-                    # Checking if the PIN Nos match
-                    while pin_no != pin_of_users[0][0]:
-                        print(
-                            "Your PIN No doesn't match!")
-                        pin_no = input(
-                            "Please enter your PIN No again:")
-                        print()
-                        while pin_no.isnumeric() == False or len(pin_no) != 4:
-                            print(
-                                "You've entered an incorrent PIN No.")
-                            pin_no = input(
-                                "Please enter a valid PIN No:")
-
-                    pwd_new = input("Please enter new password:")
-                    pwd_new1 = input("Please enter your password again:")
-
-                    # Checking if the Passwords match
-                    while pwd_new != pwd_new1:
-                        print("Both The Passwords Do Not Match")
-                        pwd_new = input("Please enter new password:")
-                        pwd_new1 = input("Please enter your password again:")
-                    else:
-                        mycur.execute("UPDATE USERS SET PASSWD = '{}' WHERE USERNAME = '{}'".format(
-                            pwd_new, usrname_existing))
-                        print("Your Password has been set successfully!")
-                        print()
-                        break
-
-                else:
-                    pwd_existing = input(
-                        "Please enter your password again:")
-                    print()
-
-        else:
-            print("You've successfully logged in to your account!")
-            if usrname_existing == admin_un and pwd_existing == admin_pass:
-                pin_admin = ['1234']
-                submenu_admin(admin_un, pin_admin)
-            else:
-                mycur.execute(
-                    "SELECT PINNO FROM USERS WHERE USERNAME = '{}'".format(usrname_existing))
-                pin_recs = mycur.fetchall()
-                submenu(usrname_existing, pin_recs[0])
+        pin_admin = ['1234']
+        submenu_admin(admin_un, pin_admin)
+        stock_val_update()
 
     elif selection == '2':
-        sign_up()
-        mycon.commit()
+        while True:
+            if new_var_u == 1:
+                new_var_u += 1
+            else:
+                display_main_user()
+                selection_u = input("Please enter a menu option:")
+
+            if selection_u == '1':
+                # For Username
+                mycur.execute("SELECT USERNAME FROM USERS;")
+                usernames = mycur.fetchall()
+                temp_list_usn = []
+                for i in usernames:
+                    for j in i:
+                        temp_list_usn.append(j)
+
+                usrname_existing = input("Please enter your username:")
+
+                while usrname_existing not in temp_list_usn:
+                    print("This user doesn't exist!")
+                    reply = input("New User? Y/N?:")
+                    while reply.isalpha() == False or reply.lower() not in ['y', 'n']:
+                        print("You've entered an invalid option.")
+                        reply = input("Please enter a valid option:")
+
+                    if reply.lower() == "y":
+                        n = 0
+                        sign_up()
+                        break
+                    else:
+                        usrname_existing = input(
+                            "Please enter your username again:")
+                        print()
+                n = 1
+                if n == 0:
+                    continue
+
+                # For Password
+                mycur.execute(
+                    "SELECT PASSWD FROM USERS WHERE USERNAME = '{}';".format(usrname_existing))
+                passwords = mycur.fetchall()
+                pwd_existing = input("Please enter your password:")
+                temp_list_pass = []
+                for i in passwords:
+                    for j in i:
+                        temp_list_pass.append(j)
+                print()
+
+                while pwd_existing not in temp_list_pass:
+                    print("You've entered an incorrect password!")
+                    replyp = input("Forgot Password? Y/N?")
+                    while replyp.isalpha() == False or replyp.lower() not in ['y', 'n']:
+                        print("You've entered an invalid option.")
+                        replyp = input("Please enter a valid option:")
+                    else:
+                        if replyp.lower() == "y":
+                            print("Then please enter the following details.")
+                            print()
+
+                            # Process
+                            accno = input(
+                                "Please enter your 10-digit account number:")
+
+                            # Validating Account number
+                            while accno.isnumeric() == False or len(accno) != 10:
+                                print("You've entered an incorrent account number.")
+                                accno = input(
+                                    "Please enter a valid account number:")
+
+                            mycur.execute(
+                                "SELECT ACCNO FROM USERS WHERE USERNAME = '{}'".format(usrname_existing))
+                            accno_rec = mycur.fetchall()
+                            temp_list_acc = []
+                            for i in accno_rec:
+                                for j in i:
+                                    temp_list_acc.append(j)
+                            while accno != str(temp_list_acc[0]):
+                                print(
+                                    "Your account doesn't exist please create a new account!")
+                                replya = input("New User? Y/N?")
+                                while replya.isalpha() == False or replya.lower() not in ['y', 'n']:
+                                    print("You've entered an invalid option.")
+                                    replya = input(
+                                        "Please enter a valid option:")
+                                else:
+                                    if replya.lower() == "y":
+                                        print()
+                                        sign_up()
+                                        break
+                                    else:
+                                        accno = input(
+                                            "Please enter your account number again:")
+                                        print()
+                                        while accno.isnumeric() == False or len(accno) != 10:
+                                            print(
+                                                "You've entered an incorrent account number.")
+                                            accno = input(
+                                                "Please enter a valid account number:")
+
+                            # Aadhar number
+                            aadhar_no = input(
+                                "Please enter your Aadhar number:")
+
+                            while aadhar_no.isnumeric() == False:
+                                print("You've entered an invalid Aadhar number.")
+                                aadhar_no = input(
+                                    "Please enter a valid Aadhar number: ")
+
+                            mycur.execute(
+                                "SELECT AADHAR FROM USERS WHERE USERNAME = '{}';".format(usrname_existing))
+                            aadhars_of_users = mycur.fetchall()
+
+                            # Checking if Aadhar is repeated
+                            while aadhar_no != aadhars_of_users[0][0]:
+                                print(
+                                    "Your account doesn't exist please create a new account!")
+                                replyc = input("New User? Y/N?")
+                                while replyc.isalpha() == False or replyc.lower() not in ['y', 'n']:
+                                    print("You've entered an invalid option.")
+                                    replyc = input(
+                                        "Please enter a valid option:")
+                                else:
+                                    if replyc.lower() == "y":
+                                        print()
+                                        sign_up()
+                                        break
+                                    else:
+                                        accno = input(
+                                            "Please enter your Aadhar number again:")
+                                        print()
+                                        while accno.isnumeric() == False:
+                                            print(
+                                                "You've entered an incorrent Aadhar number.")
+                                            accno = input(
+                                                "Please enter a valid Aadhar number:")
+
+                            # PIN number
+                            print("Connecting...")
+                            pin_no = input("Please enter your PIN No:")
+
+                            # Validating PIN number
+                            while len(pin_no) != 4:
+                                print("Please Enter A Valid PIN")
+                                pin_no = input("Please Enter Your PIN No:")
+                                break
+
+                            mycur.execute(
+                                "SELECT PINNO FROM USERS WHERE USERNAME = '{}';".format(usrname_existing))
+                            pin_of_users = mycur.fetchall()
+
+                            # Checking if the PIN Nos match
+                            while pin_no != pin_of_users[0][0]:
+                                print(
+                                    "Your PIN No doesn't match!")
+                                pin_no = input(
+                                    "Please enter your PIN No again:")
+                                print()
+                                while pin_no.isnumeric() == False or len(pin_no) != 4:
+                                    print(
+                                        "You've entered an incorrent PIN No.")
+                                    pin_no = input(
+                                        "Please enter a valid PIN No:")
+
+                            pwd_new = input("Please enter new password:")
+                            pwd_new1 = input(
+                                "Please enter your password again:")
+
+                            # Checking if the Passwords match
+                            while pwd_new != pwd_new1:
+                                print("Both The Passwords Do Not Match")
+                                pwd_new = input("Please enter new password:")
+                                pwd_new1 = input(
+                                    "Please enter your password again:")
+                            else:
+                                mycur.execute("UPDATE USERS SET PASSWD = '{}' WHERE USERNAME = '{}'".format(
+                                    pwd_new, usrname_existing))
+                                print("Your Password has been set successfully!")
+                                print()
+                                break
+
+                        else:
+                            pwd_existing = input(
+                                "Please enter your password again:")
+                            print()
+
+                else:
+                    print("You've successfully logged in to your account!")
+                    if usrname_existing == admin_un and pwd_existing == admin_pass:
+                        pin_admin = ['1234']
+                        submenu_admin(admin_un, pin_admin)
+                    else:
+                        mycur.execute(
+                            "SELECT PINNO FROM USERS WHERE USERNAME = '{}'".format(usrname_existing))
+                        pin_recs = mycur.fetchall()
+                        submenu(usrname_existing, pin_recs[0])
+
+            elif selection_u == '2':
+                sign_up()
+                mycon.commit()
+
+            elif selection == '3':
+                break
+
+            else:
+                selection = input("Please Enter A Valid Menu Option:")
+                new_var = 1
+                print()
+
+        stock_val_update()
 
     elif selection == '3':
         break
@@ -948,6 +1038,9 @@ while True:
         selection = input("Please Enter A Valid Menu Option:")
         new_var = 1
         print()
+
+    stock_val_update()
+
 
 mycon.commit()
 print()

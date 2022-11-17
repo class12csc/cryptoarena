@@ -12,6 +12,8 @@ mycur.execute(
 mycur.execute(
     "CREATE TABLE IF NOT EXISTS STOCKS (STKNAME VARCHAR(90) PRIMARY KEY, VALUE CHAR(90) NOT NULL, SYMBOL CHAR(9) NOT NULL);")
 
+# Inserting default values to the database
+
 
 def inserting_vals():
     # Inserting default Stock values
@@ -44,14 +46,14 @@ def inserting_vals():
     mycon.commit()
 
 
-# # To prevent Data Overlap Error in MYSQL(repeated entries)
+# To prevent Data Overlap Error in MYSQL(repeated entries)
 try:
     inserting_vals()
 except ms.errors.IntegrityError:
     pass
 
 
-# Functions used
+# Display related functions
 
 def introductory_display():
     print("\n\n\n")
@@ -63,10 +65,6 @@ def introductory_display():
     print("                 By Tushar and Nischit                ")
     print("         -------------------------------------        ")
     print("******************************************************")
-
-
-# Printing of menu
-introductory_display()
 
 
 def display_main_user():
@@ -122,13 +120,6 @@ def stock_val_update():
         mycur.execute(
             "UPDATE STOCKS SET VALUE = VALUE -'{}'".format(rand_no))
         mycon.commit()
-
-
-stock_val_update()
-
-# Selection Of Option from Menu
-display_main()
-selection = input("Please enter a menu option:")
 
 
 def display_stocks():
@@ -209,6 +200,13 @@ new_var_selec = 0
 # Admin credentials
 admin_un = "admin"
 admin_pass = "admin"
+
+
+# Selection Of Option from Menu
+display_main()
+selection = input("Please enter a menu option:")
+
+# Admin Loop
 
 
 def submenu_admin(user, pinno):
@@ -393,14 +391,15 @@ def submenu_admin(user, pinno):
                         balance_report[0][0]) - (float(quantity) * float(stock_value[0][0]))
                     if net_balance < 0:
                         print(
-                            f"You've insufficient amount ${math.fabs(net_balance)}!")
+                            f"You've insufficient amount of ${math.fabs(net_balance)}!")
                     else:
                         mycur.execute("UPDATE USERS SET BALANCE = '{}' WHERE USERNAME = '{}'".format(
                             str(net_balance), user))
                         print()
                         print(
                             f"You've successfully bought {stock_to_be_bought} for a price of ${float(quantity) * float(stock_value[0][0])}.")
-                        print(f"Your updated balance is $ {str(net_balance)}")
+                        print(
+                            f"Your updated balance is $ {str(round(net_balance,2))}")
                     mycon.commit()
 
         elif selec == '7':
@@ -452,6 +451,7 @@ def submenu_admin(user, pinno):
         stock_val_update()
 
 
+# User Loop
 def submenu(user, pinno):
     while True:
         """
@@ -559,21 +559,8 @@ def submenu(user, pinno):
             while stock_to_be_bought.lower() not in temp_list:
                 print("This stock does not exist!")
                 print("Please choose from the above mentioned stocks or add new stock.")
-                add_new_stock = input("Add new Stock? Y/N?:")
+                stock_to_be_bought = input("Please enter the stock's name:")
 
-                while add_new_stock.isalpha() == False or add_new_stock.lower() not in ['y', 'n']:
-                    print("You've entered an invalid option.")
-                    add_new_stock = input("Please enter a valid option:")
-
-                if add_new_stock.lower() == "y":
-                    stockname_returned = add_stk()
-                    if stockname_returned != None:
-                        stk_details(stockname_returned)
-                    mycon.commit()
-                    break
-                else:
-                    stock_to_be_bought = input(
-                        "Please enter the stock's name from the above mentioned names:")
             else:
                 quantity = float(input(
                     f"Please enter quantity of {stock_to_be_bought.capitalize()}:"))
@@ -600,14 +587,15 @@ def submenu(user, pinno):
                         balance_report[0][0]) - (float(quantity) * float(stock_value[0][0]))
                     if net_balance < 0:
                         print(
-                            f"You've insufficient amount ${math.fabs(net_balance)}!")
+                            f"You've insufficient amount of ${math.fabs(net_balance)}!")
                     else:
                         mycur.execute("UPDATE USERS SET BALANCE = '{}' WHERE USERNAME = '{}'".format(
                             str(net_balance), user))
                         print()
                         print(
                             f"You've successfully bought {stock_to_be_bought} for a price of ${float(quantity) * float(stock_value[0][0])}.")
-                        print(f"Your updated balance is $ {str(net_balance)}")
+                        print(
+                            f"Your updated balance is $ {str(round(net_balance,2))}")
                     mycon.commit()
 
         elif selec == '6':
@@ -631,6 +619,8 @@ def submenu(user, pinno):
 mycon.commit()
 new_var = 1
 new_var_u = 1
+
+# Sign Up form
 
 
 def sign_up():
@@ -793,6 +783,8 @@ def sign_up():
     submenu(username, pin_ls)
 
 
+introductory_display()
+
 # Main Loop
 while True:
 
@@ -821,6 +813,10 @@ while True:
         stock_val_update()
 
     elif selection == '2':
+        print()
+        display_main_user()
+        selection_u = input("Please enter a menu option:")
+
         while True:
             if new_var_u == 1:
                 new_var_u += 1
@@ -1021,12 +1017,12 @@ while True:
                 sign_up()
                 mycon.commit()
 
-            elif selection == '3':
+            elif selection_u == '3':
                 break
 
             else:
-                selection = input("Please Enter A Valid Menu Option:")
-                new_var = 1
+                selection_u = input("Please Enter A Valid Menu Option:")
+                new_var_u = 1
                 print()
 
         stock_val_update()
@@ -1044,4 +1040,4 @@ while True:
 
 mycon.commit()
 print()
-print("You've exited the program successfully! Thank you for using Stock Arena!")
+print("You've exited the program successfully! Thank you for using Finance Broker!")
